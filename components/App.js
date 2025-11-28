@@ -15,7 +15,7 @@ const MOBILE_TARGET_WIDTH = 800;
 const pages = [
     { 
         id:'intro', 
-        title:"BEANet", 
+        title:"Binary Enhanced Adaptive Network (BEANet)", 
         subtitle:"Redefining the Efficiency-Accuracy Frontier", 
         content: (
             <div className="space-y-6">
@@ -31,23 +31,46 @@ const pages = [
     },
     { 
         id:'adabin', 
-        title:"Adaptive Binarization", 
-        subtitle:"Minimizing Quantization Error", 
+        title:"Evolution of Binarization", 
+        subtitle:"From Standard to Optimized", 
         content: (
-            <div className="space-y-6">
-                <div className="text-gray-300 leading-relaxed">
-                    Standard <code className="text-sky-400 font-mono">Sign(x)</code> binarization is rigid. We introduce <span className="text-sky-300 font-bold drop-shadow-[0_0_5px_rgba(14,165,233,0.5)]">AdaBin</span>, a learnable activation function that adapts to distribution shifts:
-                </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm">
-                    <div className="text-center font-mono text-lg text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-                        <Latex displayMode={true}>{'x_b = \\alpha \\cdot \\text{Sign}(x - \\beta)'}</Latex>
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3">
+                    {/* Standard */}
+                    <div className="p-3 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm group hover:bg-white/10 transition-colors">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-gray-400 font-bold text-xs uppercase tracking-wider">1. Standard (XNOR-Net)</span>
+                            <span className="text-xs text-gray-500 font-mono">Fixed Threshold</span>
+                        </div>
+                        <div className="text-center font-mono text-sm text-gray-300">
+                            <Latex>{'x_b = \\alpha \\cdot \\text{Sign}(x)'}</Latex>
+                        </div>
                     </div>
-                    <div className="mt-2 text-[10px] text-center text-gray-500 uppercase tracking-widest">
-                        α: Scaling Factor &nbsp;|&nbsp; β: Shift Parameter
+
+                    {/* Adaptive */}
+                    <div className="p-3 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm group hover:bg-white/10 transition-colors">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-sky-400 font-bold text-xs uppercase tracking-wider">2. Adaptive (AdaBin)</span>
+                            <span className="text-xs text-gray-500 font-mono">Learnable Shift</span>
+                        </div>
+                        <div className="text-center font-mono text-sm text-sky-200">
+                            <Latex>{'x_b = \\alpha_{learn} \\cdot \\text{Sign}(x - \\beta_{learn})'}</Latex>
+                        </div>
                     </div>
-                </div>
-                <div className="text-xs text-gray-400 italic">
-                    Implemented via highly efficient <span className="text-white">XNOR + Bitcount</span> operations on hardware.
+
+                    {/* Optimized */}
+                    <div className="p-3 bg-green-900/20 rounded-lg border border-green-500/30 backdrop-blur-sm group hover:bg-green-900/30 transition-colors">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-green-400 font-bold text-xs uppercase tracking-wider">3. Optimized (Ours)</span>
+                            <span className="text-xs text-green-500/80 font-mono">Analytical Optimal</span>
+                        </div>
+                        <div className="text-center font-mono text-sm text-green-300">
+                            <Latex>{'\\alpha^* = \\text{Mean}(|x - \\bar{x}|)'}</Latex>
+                        </div>
+                        <div className="mt-1 text-[10px] text-center text-green-500/60">
+                            Minimizes L1 Quantization Error
+                        </div>
+                    </div>
                 </div>
             </div>
         ), 
@@ -55,7 +78,7 @@ const pages = [
     },
     { 
         id:'exste', 
-        title:"ExSTE", 
+        title:"Exponential Straight-Through Estimator (ExSTE)", 
         subtitle:"Exponential Soft-Through Estimator", 
         content: (
             <div className="space-y-6">
@@ -241,11 +264,15 @@ const App = () => {
                 <div className={`w-full relative select-none text-[#e0e0e0] font-['Inter'] transition-all duration-500 ${isLandscape ? 'min-h-full flex flex-col' : 'min-h-full flex flex-col'}`}>
                     
                     {/* Header */}
-                    <div className="flex justify-between items-center px-8 py-2 z-20 h-12 shrink-0">
-                        <div className="font-black tracking-widest text-sky-500 text-lg magnetic-target cursor-pointer" onClick={()=>go(0)}>BEANET_ULTIMATE</div>
+                    <div className={`flex z-20 shrink-0 transition-all duration-500 ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'}`}>
+                        <div className="font-black tracking-widest text-sky-500 text-3xl magnetic-target cursor-pointer" onClick={()=>go(0)}>BEANet</div>
                         <div 
                             ref={navRef}
-                            className="flex gap-6 py-4 px-9 magnetic-target cursor-pointer" // Increased gap and padding
+                            className={`flex items-center magnetic-target cursor-pointer transition-all duration-300 ${isLandscape ? 'gap-6 py-4 px-9' : 'gap-3 py-2 px-4'}`}
+                            style={!isLandscape ? { 
+                                transform: `scale(${Math.min(1, (window.innerWidth - 32) / 350)})`,
+                                transformOrigin: 'center top'
+                            } : {}}
                             data-magnetic-strength="0.4"
                             onMouseMove={(e) => {
                                 if (!navRef.current) return;
@@ -315,7 +342,7 @@ const App = () => {
                                         <span className="text-sky-300 text-xs font-bold tracking-widest">SECTION 0{curr+1}</span>
                                     </div>
                                 </div>
-                                <h1 className={`${isLandscape ? 'text-5xl' : 'text-3xl'} font-black text-white mb-4 leading-tight`}>{pages[curr].title}</h1>
+                                <h1 className={`${isLandscape ? 'text-4xl' : 'text-2xl'} font-black text-white mb-4 leading-tight`}>{pages[curr].title}</h1>
                                 <h2 className="text-lg font-light text-gray-400 mb-6 font-mono">{pages[curr].subtitle}</h2>
                                 <div className="pointer-events-auto leading-relaxed opacity-90">{pages[curr].content}</div>
                             </div>
