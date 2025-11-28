@@ -1,104 +1,241 @@
-const { useState, useEffect, useRef } = React;
-
 const NeuralBackground = () => {
-    const containerRef = useRef(null);
-    const mouse = useRef({ x: 0, y: 0 });
-    const target = useRef({ x: 0, y: 0 });
+    const canvasRef = React.useRef(null);
+    const mouseRef = React.useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
 
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            // Normalize mouse position -1 to 1
-            target.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-            target.current.y = (e.clientY / window.innerHeight) * 2 - 1;
+    React.useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        
+        // --- Configuration ---
+        // 1. Blob Colors (Dark Red/Purple/Navy)
+        const BLOB_COLORS = [
+            { r: 76, g: 29, b: 149 },   // Deep Purple
+            { r: 131, g: 24, b: 67 },   // Dark Pink/Red
+            { r: 30, g: 27, b: 75 },    // Dark Navy
+            { r: 88, g: 28, b: 135 },   // Purple
+            { r: 127, g: 29, b: 29 },   // Dark Red
+            { r: 15, g: 23, b: 42 }     // Slate 900 (Dark Blue-Grey)
+        ];
+
+        // 2. Dust/Particle Colors (Blue/Purple/White Glow)
+        const DUST_COLORS = [
+            'rgba(56, 189, 248, 0.8)',  // Sky Blue
+            'rgba(168, 85, 247, 0.8)',  // Purple
+            'rgba(255, 255, 255, 0.6)'  // White
+        ];
+
+        let blobs = [];
+        let dustParticles = [];
+
+        const resize = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initElements();
         };
 
-        let frameId;
-        const animate = () => {
-            // Smooth interpolation (lerp) for premium feel
-            mouse.current.x += (target.current.x - mouse.current.x) * 0.05;
-            mouse.current.y += (target.current.y - mouse.current.y) * 0.05;
+        // --- Classes ---
 
-            if (containerRef.current) {
-                containerRef.current.style.setProperty('--mouse-x', mouse.current.x);
-                containerRef.current.style.setProperty('--mouse-y', mouse.current.y);
+        class Blob {
+            constructor() {
+                this.init();
             }
-            frameId = requestAnimationFrame(animate);
+
+            init() {
+                this.radius = Math.random() * 300 + 250; // Larger blobs
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.color = BLOB_COLORS[Math.floor(Math.random() * BLOB_COLORS.length)];
+                this.alpha = Math.random() * 0.2 + 0.15; // Slightly more opaque
+                
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.wanderRadius = 200;
+                this.wanderTheta = Math.random() * Math.PI * 2;
+                this.wanderSpeed = Math.random() * 0.001 + 0.0005;
+            }
+
+            update(mouse) {
+                // Slow, heavy wandering
+                this.wanderTheta += this.wanderSpeed;
+                const wanderX = this.baseX + Math.cos(this.wanderTheta) * this.wanderRadius;
+                const wanderY = this.baseY + Math.sin(this.wanderTheta * 1.3) * this.wanderRadius;
+
+                // Very subtle mouse repulsion for background blobs
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                const interactDist = 800;
+                
+                let interactX = 0;
+                let interactY = 0;
+
+                if (dist < interactDist) {
+                    const force = (interactDist - dist) / interactDist;
+                    interactX = -dx * force * 0.05; 
+                    interactY = -dy * force * 0.05;
+                }
+
+                const targetX = wanderX + interactX;
+                const targetY = wanderY + interactY;
+
+                this.x += (targetX - this.x) * 0.01; 
+                this.y += (targetY - this.y) * 0.01;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                const { r, g: gr, b } = this.color;
+                g.addColorStop(0, `rgba(${r}, ${gr}, ${b}, ${this.alpha})`);
+                g.addColorStop(0.6, `rgba(${r}, ${gr}, ${b}, ${this.alpha * 0.4})`);
+                g.addColorStop(1, `rgba(${r}, ${gr}, ${b}, 0)`);
+                ctx.fillStyle = g;
+                ctx.fill();
+            }
+        }
+
+        class Dust {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.05; // Much slower initial
+                this.vy = (Math.random() - 0.5) * 0.05;
+                this.size = Math.random() * 2.5 + 0.5; // Random size 0.5 - 3.0 
+                this.color = DUST_COLORS[Math.floor(Math.random() * DUST_COLORS.length)];
+                this.baseAlpha = Math.random() * 0.4 + 0.2;
+                this.alpha = this.baseAlpha;
+                this.pulseSpeed = Math.random() * 0.03 + 0.02; // Faster pulse for twinkle
+                this.pulseTheta = Math.random() * Math.PI * 2;
+            }
+
+            update(mouse) {
+                // 1. Float
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wrap around screen
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+
+                // 2. Pulse Glow (Twinkle)
+                this.pulseTheta += this.pulseSpeed;
+                this.alpha = this.baseAlpha + Math.sin(this.pulseTheta) * 0.15;
+
+                // 3. Mouse Repulsion (Extremely Subtle)
+                let dx = this.x - mouse.x;
+                let dy = this.y - mouse.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                const interactDist = 100; 
+
+                if (dist < interactDist) {
+                    const force = (interactDist - dist) / interactDist;
+                    // Push away - extremely subtle
+                    this.vx += (dx / dist) * force * 0.005; 
+                    this.vy += (dy / dist) * force * 0.005;
+                }
+
+                // 4. Random Wandering (Brownian-like) - Reduced
+                this.vx += (Math.random() - 0.5) * 0.005;
+                this.vy += (Math.random() - 0.5) * 0.005;
+
+                // Dampen speed to keep them floating gently - Reduced max speed
+                const maxSpeed = 0.2;
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                
+                const currentAlpha = Math.max(0, Math.min(1, this.alpha));
+                ctx.globalAlpha = currentAlpha;
+                
+                // Dynamic Glow effect based on alpha (Twinkle)
+                ctx.shadowBlur = 8 + (currentAlpha * 10); 
+                ctx.shadowColor = this.color;
+                
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        const initElements = () => {
+            blobs = [];
+            dustParticles = [];
+            
+            // 8 Large Background Blobs
+            for (let i = 0; i < 8; i++) {
+                blobs.push(new Blob());
+            }
+
+            // Increased Dust Particles
+            const dustCount = Math.floor((width * height) / 6000); // Higher density
+            for (let i = 0; i < dustCount; i++) {
+                dustParticles.push(new Dust());
+            }
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+        const handleMouseMove = (e) => {
+            mouseRef.current.x = e.clientX;
+            mouseRef.current.y = e.clientY;
+        };
+
+        const animate = () => {
+            // Dark Background
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = '#020205'; // Almost black
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Blobs (Soft, blended)
+            ctx.globalCompositeOperation = 'screen'; 
+            blobs.forEach(blob => {
+                blob.update(mouseRef.current);
+                blob.draw();
+            });
+
+            // Draw Dust (Sharp, glowing, on top)
+            ctx.globalCompositeOperation = 'source-over'; // Or 'lighter' for more intense glow
+            dustParticles.forEach(p => {
+                p.update(mouseRef.current);
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        };
+
+        resize();
         animate();
 
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', handleMouseMove);
+
         return () => {
+            window.removeEventListener('resize', resize);
             window.removeEventListener('mousemove', handleMouseMove);
-            cancelAnimationFrame(frameId);
         };
     }, []);
 
     return (
-        <div ref={containerRef} className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0 bg-[#000000]">
-            <style>{`
-                @keyframes float-1 {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                }
-                @keyframes float-2 {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(-40px, 30px) scale(1.2); }
-                }
-                @keyframes float-3 {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(20px, 40px) scale(0.85); }
-                }
-                @keyframes rotate-slow {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-                
-                .parallax-layer {
-                    position: absolute;
-                    transition: transform 0.1s linear;
-                    will-change: transform;
-                }
-            `}</style>
-            
-            {/* Base Gradient - Slightly lighter for better contrast */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#050508] via-[#0a0a15] to-[#050508]" />
-
-            {/* Subtle Rotating Light Cone for Complexity */}
-            <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] opacity-[0.03] animate-[rotate-slow_60s_linear_infinite]"
-                 style={{ background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, white 30deg, transparent 60deg)' }} />
-
-            {/* Orb 1: Deep Purple/Blue - Top Left - Increased Opacity & Definition */}
-            <div className="parallax-layer top-[-10%] left-[-10%] w-[70vw] h-[70vw]" 
-                 style={{ transform: 'translate(calc(var(--mouse-x) * -20px), calc(var(--mouse-y) * -20px))' }}>
-                <div className="w-full h-full rounded-full blur-[80px] opacity-60 animate-[float-1_20s_ease-in-out_infinite]"
-                     style={{ background: 'radial-gradient(circle at center, #581c87 0%, #312e81 40%, transparent 70%)' }} />
-            </div>
-
-            {/* Orb 2: Cyan/Sky - Bottom Right - Increased Opacity & Definition */}
-            <div className="parallax-layer bottom-[-20%] right-[-10%] w-[80vw] h-[80vw]"
-                 style={{ transform: 'translate(calc(var(--mouse-x) * -30px), calc(var(--mouse-y) * -30px))' }}>
-                <div className="w-full h-full rounded-full blur-[90px] opacity-50 animate-[float-2_25s_ease-in-out_infinite]"
-                     style={{ background: 'radial-gradient(circle at center, #0284c7 0%, #0369a1 40%, transparent 70%)' }} />
-            </div>
-
-            {/* Orb 3: Accent Pink/Indigo - Center/Floating - Increased Opacity */}
-            <div className="parallax-layer top-[20%] left-[30%] w-[40vw] h-[40vw]"
-                 style={{ transform: 'translate(calc(var(--mouse-x) * -50px), calc(var(--mouse-y) * -50px))' }}>
-                <div className="w-full h-full rounded-full blur-[70px] opacity-40 animate-[float-3_18s_ease-in-out_infinite]"
-                     style={{ background: 'radial-gradient(circle at center, #db2777 0%, #be185d 40%, transparent 70%)' }} />
-            </div>
-
-             {/* Orb 4: Warm Gold/Orange - Subtle Highlight - Increased Opacity */}
-             <div className="parallax-layer top-[40%] right-[20%] w-[30vw] h-[30vw]"
-                 style={{ transform: 'translate(calc(var(--mouse-x) * -40px), calc(var(--mouse-y) * -40px))' }}>
-                <div className="w-full h-full rounded-full blur-[60px] opacity-30 animate-[float-1_22s_ease-in-out_infinite]"
-                     style={{ background: 'radial-gradient(circle at center, #d97706 0%, transparent 70%)' }} />
-            </div>
-
-            {/* Noise Overlay - Slightly reduced for cleaner look */}
-            <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
-        </div>
+        <canvas 
+            ref={canvasRef} 
+            className="fixed inset-0 pointer-events-none z-0"
+            style={{ opacity: 1 }}
+        />
     );
 };

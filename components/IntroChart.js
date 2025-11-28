@@ -1,13 +1,21 @@
-const { useState, useEffect, useRef, useMemo } = React;
+
 
 const IntroChart = () => {
-    const [hoveredSeries, setHoveredSeries] = useState(null);
-    const [hoveredPoint, setHoveredPoint] = useState(null);
+    const [hoveredSeries, setHoveredSeries] = React.useState(null);
+    const [hoveredPoint, setHoveredPoint] = React.useState(null);
     
     const minLog = Math.log10(3); 
     const maxLog = Math.log10(110);
     const mapX = (val) => ((Math.log10(val) - minLog) / (maxLog - minLog)) * 100;
-    const mapY = (val) => ((val - 50) / (80 - 50)) * 100; // Adjusted Y range for better visibility of lower acc models
+    const mapY = (val) => ((val - 50) / (85 - 50)) * 100; // Adjusted Y range for better visibility of lower acc models
+
+    const lastPos = React.useRef({ left: '50%', top: '50%' });
+    if (hoveredPoint) {
+        lastPos.current = {
+            left: `${Math.min(Math.max(mapX(hoveredPoint.x), 10), 80)}%`,
+            top: `${Math.min(100 - mapY(hoveredPoint.y) + 5, 80)}%`
+        };
+    }
 
     const series = [
         { 
@@ -30,7 +38,9 @@ const IntroChart = () => {
             data: [
                 {x:5.4, y:68.4, label:'18'}, 
                 {x:13.3, y:72.4, label:'Tiny'}, 
-                {x:26.7, y:76.1, label:'Small'}
+                {x:26.7, y:76.1, label:'Small'},
+                {x:45.4, y:78.5, label:'Middle'},
+                {x:82.3, y:80.6, label:'Large'}
             ] 
         },
         { 
@@ -108,18 +118,25 @@ const IntroChart = () => {
     ];
 
     return (
-        <div className="absolute inset-0 w-full h-full p-6 flex flex-col animate-fade-in">
-            <div className="flex-1 relative border-l border-b border-gray-600/50 ml-8 mb-8">
+        <div className="absolute inset-0 w-full h-full p-2 flex flex-col animate-fade-in">
+            <div className="flex-1 flex flex-row min-h-0 mt-4">
+                <div className="w-24 relative pb-10">
+                    <div className="absolute top-[68%] left+3 -translate-y-1/2 -rotate-90 whitespace-nowrap text-lg font-bold text-gray-400 font-mono tracking-widest origin-center w-full text-center">
+                        ImageNet Top-1 Accuracy (%)
+                    </div>
+                </div>
+                <div className="flex-1 relative border-l-2 border-b-2 border-gray-600 mb-10">
+
                 {/* Grid Lines */}
                 <div className="absolute inset-0 pointer-events-none">
-                   {[50, 60, 70, 80].map(v => (
+                   {[50, 60, 70, 80, 85].map(v => (
                        <div key={v} className="absolute w-full h-px bg-gray-800/30" style={{bottom:`${mapY(v)}%`}}>
-                           <span className="absolute -left-8 -top-2 text-[10px] text-gray-500 font-mono">{v}</span>
+                           <span className="absolute -left-14 -top-3 w-12 text-right pr-2 text-sm font-bold text-gray-400 font-mono">{v}</span>
                        </div>
                    ))}
-                   {[4, 10, 40, 100].map(v => (
+                   {[5, 10, 20, 50, 100].map(v => (
                        <div key={v} className="absolute h-full w-px bg-gray-800/30" style={{left:`${mapX(v)}%`}}>
-                           <span className="absolute -bottom-6 -left-2 text-[10px] text-gray-500 font-mono">{v}</span>
+                           <span className="absolute -bottom-8 -left-6 text-lg font-bold text-gray-400 font-mono">{v}</span>
                        </div>
                    ))}
                 </div>
@@ -132,6 +149,17 @@ const IntroChart = () => {
                         
                         return (
                             <g key={i} style={{opacity: isDimmed ? 0.1 : 1, transition:'all 0.3s'}}>
+                                {/* Permanent Faint Glow */}
+                                <path 
+                                    d={`M ${s.data.map(p=>`${mapX(p.x)}% ${100-mapY(p.y)}%`).join(' L ')}`} 
+                                    fill="none" 
+                                    stroke={s.color} 
+                                    strokeWidth={s.width * 3} 
+                                    strokeOpacity={0.1}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    style={{filter: 'blur(2px)'}}
+                                />
                                 {/* Glow Effect for Hovered Series */}
                                 {isHovered && (
                                     <path 
@@ -192,16 +220,27 @@ const IntroChart = () => {
 
                 {/* Tooltip - Dynamic Position near Mouse/Point */}
                 {/* Persistent Tooltip Background (Shared Animation State) */}
+                {/* Tooltip - Dynamic Position near Mouse/Point */}
+                {/* Persistent Tooltip Background (Shared Animation State) */}
                 <div 
-                    className="absolute z-40 min-w-[200px] pointer-events-none transition-all duration-300 bg-gray-900/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden"
+                    className="absolute z-40 min-w-[220px] pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.6)] overflow-hidden group"
                     style={{
-                        left: hoveredPoint ? `${Math.min(Math.max(mapX(hoveredPoint.x), 10), 80)}%` : '50%',
-                        top: hoveredPoint ? `${Math.min(100 - mapY(hoveredPoint.y) + 5, 80)}%` : '50%',
-                        transform: 'translateX(-10%)',
+                        left: lastPos.current.left,
+                        top: lastPos.current.top,
+                        transform: hoveredSeries && hoveredPoint ? 'translateX(-10%) scale(1) translateY(0)' : 'translateX(-10%) scale(0.9) translateY(10px)',
                         opacity: hoveredSeries && hoveredPoint ? 1 : 0,
-                        visibility: hoveredSeries && hoveredPoint ? 'visible' : 'hidden'
+                        visibility: hoveredSeries && hoveredPoint ? 'visible' : 'hidden',
+                        boxShadow: hoveredSeries ? `0 0 0 1px ${series.find(s=>s.name===hoveredSeries).color}40, 0 0 20px ${series.find(s=>s.name===hoveredSeries).color}20` : 'none'
                     }}
                 >
+                    {/* Edge Glow Gradient */}
+                    <div 
+                        className="absolute inset-0 opacity-50"
+                        style={{
+                            background: hoveredSeries ? `radial-gradient(circle at top left, ${series.find(s=>s.name===hoveredSeries).color}40, transparent 70%)` : 'none'
+                        }}
+                    />
+
                     <style>{`
                         @keyframes orbFloat1 {
                             0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
@@ -215,18 +254,12 @@ const IntroChart = () => {
                             66% { transform: translate(-20%, -80%) scale(1.3); opacity: 0.5; }
                             100% { transform: translate(0, 0) scale(1.2); opacity: 0.4; }
                         }
-                        @keyframes orbFloat3 {
-                            0% { transform: translate(0, 0) scale(0.8); opacity: 0.2; }
-                            33% { transform: translate(50%, -50%) scale(1.1); opacity: 0.5; }
-                            66% { transform: translate(-50%, 50%) scale(0.9); opacity: 0.3; }
-                            100% { transform: translate(0, 0) scale(0.8); opacity: 0.2; }
-                        }
                     `}</style>
                     
                     {/* Floating Blurred Orbs - Always Running */}
-                    <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                    <div className="absolute inset-0 overflow-hidden rounded-xl">
                         <div className="absolute inset-[-50%]">
-                            {/* Orb 1 - Top Left (Speed 2x: 18s -> 9s) */}
+                            {/* Orb 1 - Top Left */}
                             <div 
                                 className="absolute top-[-20%] left-[-20%] w-48 h-48 rounded-full animate-[orbFloat1_9s_ease-in-out_infinite]"
                                 style={{
@@ -236,7 +269,7 @@ const IntroChart = () => {
                                     transition: 'background-color 0.3s'
                                 }}
                             />
-                            {/* Orb 2 - Bottom Right (Speed 2x: 22s -> 11s) */}
+                            {/* Orb 2 - Bottom Right */}
                             <div 
                                 className="absolute bottom-[-20%] right-[-20%] w-56 h-56 rounded-full animate-[orbFloat2_11s_ease-in-out_infinite]"
                                 style={{
@@ -246,44 +279,40 @@ const IntroChart = () => {
                                     transition: 'background-color 0.3s'
                                 }}
                             />
-                            {/* Orb 3 - Wandering Highlight (Center) (Speed 2x: 20s -> 10s) */}
-                            <div 
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full animate-[orbFloat3_10s_ease-in-out_infinite]"
-                                style={{
-                                    backgroundColor: '#ffffff',
-                                    filter: 'blur(40px)',
-                                    mixBlendMode: 'overlay',
-                                    opacity: 0.5
-                                }}
-                            />
                         </div>
                     </div>
 
-                    {/* Content Layer (Only visible when hovering) */}
-                    <div className={`relative z-10 mix-blend-hard-light p-4 transition-opacity duration-200 ${hoveredSeries ? 'opacity-100' : 'opacity-0'}`}>
+                    {/* Content Layer */}
+                    <div className={`relative z-10 p-5 transition-opacity duration-200 ${hoveredSeries ? 'opacity-100' : 'opacity-0'}`}>
                         {hoveredSeries && hoveredPoint && (
                             <>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 rounded-full shadow-[0_0_10px_currentColor]" style={{backgroundColor: series.find(s=>s.name===hoveredSeries).color, color: series.find(s=>s.name===hoveredSeries).color}}></div>
-                                    <div className="text-xs font-bold uppercase tracking-wider text-white/90">{hoveredSeries}</div>
+                                <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+                                    <div className="text-lg font-black uppercase tracking-wider" style={{color: series.find(s=>s.name===hoveredSeries).color, textShadow: `0 0 15px ${series.find(s=>s.name===hoveredSeries).color}60`}}>
+                                        {hoveredSeries}
+                                    </div>
+                                    <div className="text-xs font-bold text-white/90 bg-white/10 px-2 py-1 rounded-md border border-white/10 shadow-sm backdrop-blur-md">{hoveredPoint.label}</div>
                                 </div>
-                                <div className="text-3xl font-black text-white mb-1 drop-shadow-md">
-                                    {hoveredPoint.y}% <span className="text-xs font-normal text-white/70 ml-1">Top-1 Acc</span>
+                                
+                                <div className="flex items-baseline gap-1 mb-1">
+                                    <span className="text-4xl font-bold tracking-tighter text-white drop-shadow-md font-[Outfit]">{hoveredPoint.y}</span>
+                                    <span className="text-sm font-light text-white/60">%</span>
                                 </div>
-                                <div className="flex justify-between items-center border-t border-white/20 pt-3 mt-2">
-                                    <span className="text-[10px] text-white/70 font-mono uppercase tracking-wider">Params</span>
-                                    <span className="text-sm font-mono text-white font-bold">{hoveredPoint.x}M</span>
-                                </div>
-                                <div className="flex justify-between items-center mt-1">
-                                    <span className="text-[10px] text-white/70 font-mono uppercase tracking-wider">Model</span>
-                                    <span className="text-sm font-mono text-white font-bold">{hoveredPoint.label}</span>
+                                <div className="text-[10px] text-white/40 uppercase tracking-widest mb-4">Top-1 Accuracy</div>
+
+                                <div className="flex justify-between items-center bg-black/20 rounded-lg p-2 border border-white/5">
+                                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider">Params</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-sm font-mono text-white font-bold">{hoveredPoint.x}</span>
+                                        <span className="text-[10px] text-white/40 font-mono">M</span>
+                                    </div>
                                 </div>
                             </>
                         )}
                     </div>
                 </div>
+                </div>
             </div>
-            <div className="text-center text-xs text-gray-500 font-mono tracking-widest">PARAMS (MB) - LOG SCALE</div>
+            <div className="text-center text-lg font-bold text-gray-400 font-mono tracking-[0.2em] mt-2">PARAMS (MB) - LOG SCALE</div>
         </div>
     );
 };

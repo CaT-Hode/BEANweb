@@ -1,11 +1,11 @@
-const { useState, useEffect, useRef, useMemo } = React;
+
 
 const ArchitectureUltimate = () => {
-    const [level, setLevel] = useState(0); // 0: Total, 1: Block/Detail, 2: Processor
-    const [selection, setSelection] = useState({ section: 'stages', processor: 'efficient' }); // section: 'stem' | 'stages' | 'head'
-    const [animDir, setAnimDir] = useState('none'); // 'up' | 'down' | 'none'
-    const [animScope, setAnimScope] = useState('section'); // 'section' | 'processor'
-    const containerRef = useRef(null);
+    const [level, setLevel] = React.useState(0); // 0: Total, 1: Block/Detail, 2: Processor
+    const [selection, setSelection] = React.useState({ section: 'stages', processor: 'efficient' }); // section: 'stem' | 'stages' | 'head'
+    const [animDir, setAnimDir] = React.useState('none'); // 'up' | 'down' | 'none'
+    const [animScope, setAnimScope] = React.useState('section'); // 'section' | 'processor'
+    const containerRef = React.useRef(null);
 
     // --- Layout Constants ---
     // Optimized for smooth morphing.
@@ -82,11 +82,11 @@ const ArchitectureUltimate = () => {
         }
     };
 
-    const [hoverInfo, setHoverInfo] = useState(null);
+    const [hoverInfo, setHoverInfo] = React.useState(null);
 
     // --- Tooltip Animation Lock ---
-    const isAnimating = useRef(false);
-    const pendingHover = useRef(null);
+    const isAnimating = React.useRef(false);
+    const pendingHover = React.useRef(null);
 
     const updateHoverInfo = (info) => {
         pendingHover.current = info;
@@ -95,7 +95,7 @@ const ArchitectureUltimate = () => {
         }
     };
 
-    useEffect(() => {
+    React.useEffect(() => {
         // Lock tooltips during level transitions
         setHoverInfo(null);
         isAnimating.current = true;

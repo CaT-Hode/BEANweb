@@ -1,8 +1,8 @@
-const { useState, useEffect, useRef, useMemo } = React;
+
 
 const Latex = ({ children, displayMode = false }) => {
-    const [html, setHtml] = useState(children);
-    useEffect(() => {
+    const [html, setHtml] = React.useState(children);
+    React.useEffect(() => {
         if (window.katex) {
             setHtml(window.katex.renderToString(children, { throwOnError: false, displayMode }));
         }
@@ -155,12 +155,12 @@ const pages = [
 ];
 
 const useScale = () => {
-    const [scale, setScale] = useState(1);
-    const [visualScale, setVisualScale] = useState(1);
-    const [textScale, setTextScale] = useState(1);
-    const [mobileScale, setMobileScale] = useState(1);
+    const [scale, setScale] = React.useState(1);
+    const [visualScale, setVisualScale] = React.useState(1);
+    const [textScale, setTextScale] = React.useState(1);
+    const [mobileScale, setMobileScale] = React.useState(1);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const handleResize = () => {
             // Check for portrait mode (mobile/tablet vertical)
             const isPortrait = window.innerHeight / window.innerWidth > 0.75;
@@ -218,14 +218,14 @@ const useScale = () => {
 
 const App = () => {
     const { scale, visualScale, textScale, mobileScale } = useScale();
-    const [curr, setCurr] = useState(0);
-    const [anim, setAnim] = useState(false);
+    const [curr, setCurr] = React.useState(0);
+    const [anim, setAnim] = React.useState(false);
     // State to track layout mode
-    const [isLandscape, setIsLandscape] = useState(true);
-    const [navHover, setNavHover] = useState(null);
-    const navRef = useRef(null);
+    const [isLandscape, setIsLandscape] = React.useState(true);
+    const [navHover, setNavHover] = React.useState(null);
+    const navRef = React.useRef(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
         // Determine if we are in landscape mode based on aspect ratio > 1
         const checkLayout = () => {
             setIsLandscape((window.innerWidth / window.innerHeight) > (4/3));
@@ -267,59 +267,29 @@ const App = () => {
                     <div className={`flex z-20 shrink-0 transition-all duration-500 ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'}`}>
                         <div className="font-black tracking-widest text-sky-500 text-3xl magnetic-target cursor-pointer" onClick={()=>go(0)}>BEANet</div>
                         <div 
-                            ref={navRef}
-                            className={`flex items-center magnetic-target cursor-pointer transition-all duration-300 ${isLandscape ? 'gap-6 py-4 px-9' : 'gap-3 py-2 px-4'}`}
+                            className={`flex items-center transition-all duration-300 magnetic-target ${isLandscape ? 'mr-4' : ''}`}
+                            data-magnetic-strength="0.1"
+                            onMouseLeave={() => setNavHover(null)}
                             style={!isLandscape ? { 
                                 transform: `scale(${Math.min(1, (window.innerWidth - 32) / 350)})`,
                                 transformOrigin: 'center top'
                             } : {}}
-                            data-magnetic-strength="0.4"
-                            onMouseMove={(e) => {
-                                if (!navRef.current) return;
-                                const rect = navRef.current.getBoundingClientRect();
-                                const rectWidth = rect.width / scale;
-                                const rectLeft = rect.left / scale;
-                                const mouseX = e.clientX / scale;
-                                const x = mouseX - rectLeft;
-                                const idx = Math.min(Math.max(Math.floor((x / rectWidth) * pages.length), 0), pages.length - 1);
-                                setNavHover(idx);
-                            }}
-                            onTouchMove={(e) => {
-                                if (!navRef.current || !e.touches[0]) return;
-                                const rect = navRef.current.getBoundingClientRect();
-                                const rectWidth = rect.width / scale;
-                                const rectLeft = rect.left / scale;
-                                const mouseX = e.touches[0].clientX / scale;
-                                const x = mouseX - rectLeft;
-                                const idx = Math.min(Math.max(Math.floor((x / rectWidth) * pages.length), 0), pages.length - 1);
-                                setNavHover(idx);
-                            }}
-                            onMouseLeave={() => setNavHover(null)}
-                            onTouchEnd={() => {
-                                // Optional: trigger navigation on touch end if we want drag-to-select
-                                if (navHover !== null && navHover !== curr) go(navHover);
-                                setNavHover(null);
-                            }}
-                            onClick={(e) => {
-                                // Robust click handling for both mouse and touch (if touch didn't trigger move)
-                                if (!navRef.current) return;
-                                const rect = navRef.current.getBoundingClientRect();
-                                const rectWidth = rect.width / scale;
-                                const rectLeft = rect.left / scale;
-                                const mouseX = e.clientX / scale;
-                                const x = mouseX - rectLeft;
-                                const idx = Math.min(Math.max(Math.floor((x / rectWidth) * pages.length), 0), pages.length - 1);
-                                if (idx !== curr) go(idx);
-                            }}
                         >
                             {pages.map((_,i)=>(
-                                <div key={i} 
-                                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                                        (navHover !== null ? navHover === i : curr === i) 
-                                        ? 'w-28 bg-sky-500 shadow-[0_0_10px_#38bdf8]' 
-                                        : 'w-7 bg-gray-700'
-                                    }`}
-                                />
+                                <button 
+                                    key={i}
+                                    onClick={()=>go(i)}
+                                    onMouseEnter={()=>setNavHover(i)}
+                                    className="relative py-6 px-4 group focus:outline-none"
+                                >
+                                    <div 
+                                        className={`h-1.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                                            (navHover !== null ? navHover === i : curr === i) 
+                                            ? 'w-24 bg-sky-500 shadow-[0_0_15px_#38bdf8]' 
+                                            : 'w-8 bg-gray-700 group-hover:bg-gray-500'
+                                        }`}
+                                    />
+                                </button>
                             ))}
                         </div>
                     </div>

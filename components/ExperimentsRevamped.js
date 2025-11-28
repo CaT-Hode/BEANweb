@@ -1,10 +1,10 @@
-const { useState, useEffect, useRef, useMemo } = React;
+
 
 const ExperimentsRevamped = () => {
-    const [tab, setTab] = useState('imagenet');
-    const [imgScale, setImgScale] = useState('Nano'); // Nano, Tiny, Small, Medium, Large
-    const [expandedItem, setExpandedItem] = useState(null); // { type, index }
-    const [expandedSection, setExpandedSection] = useState(null); // 'structural' or 'optimization'
+    const [tab, setTab] = React.useState('imagenet');
+    const [imgScale, setImgScale] = React.useState('Nano'); // Nano, Tiny, Small, Medium, Large
+    const [expandedItem, setExpandedItem] = React.useState(null); // { type, index }
+    const [expandedSection, setExpandedSection] = React.useState(null); // 'structural' or 'optimization'
 
     // Data extracted from Table II
     const imagenetData = {

@@ -1,17 +1,17 @@
-const { useState, useEffect, useRef, useMemo } = React;
+
 
 const ExSTEDemo = () => {
-    const [exponent, setExponent] = useState(-2);
-    const [isHovering, setIsHovering] = useState(false);
-    const canvasRef = useRef(null);
-    const [animSpeed, setAnimSpeed] = useState(0);
-    const direction = useRef(1); // 1 = increasing, -1 = decreasing
-    const phase = useRef(0); // Phase for harmonic motion
+    const [exponent, setExponent] = React.useState(-2);
+    const [isHovering, setIsHovering] = React.useState(false);
+    const canvasRef = React.useRef(null);
+    const [animSpeed, setAnimSpeed] = React.useState(0);
+    const direction = React.useRef(1); // 1 = increasing, -1 = decreasing
+    const phase = React.useRef(0); // Phase for harmonic motion
     
-    const sliderRef = useRef(null);
-    const speedFactor = useRef(1); // 1 = full speed, 0 = stopped
-    const isDragging = useRef(false);
-    const exponentRef = useRef(exponent); // Keep track of latest value for loop
+    const sliderRef = React.useRef(null);
+    const speedFactor = React.useRef(1); // 1 = full speed, 0 = stopped
+    const isDragging = React.useRef(false);
+    const exponentRef = React.useRef(exponent); // Keep track of latest value for loop
 
     // Update ref on render
     exponentRef.current = exponent;
@@ -44,7 +44,7 @@ const ExSTEDemo = () => {
     };
 
     // Auto-Animation Effect
-    useEffect(() => {
+    React.useEffect(() => {
         let animationFrameId;
         let prevTime = performance.now();
 
@@ -115,7 +115,7 @@ const ExSTEDemo = () => {
         };
     }, []);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         const dpr = window.devicePixelRatio || 1;

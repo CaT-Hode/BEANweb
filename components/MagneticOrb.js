@@ -1,15 +1,15 @@
-const { useState, useEffect, useRef, useMemo } = React;
+
 
 const MagneticOrb = () => {
-    const orbRef = useRef(null);
-    const pos = useRef({ x: 0, y: 0 });
-    const mouse = useRef({ x: 0, y: 0 });
-    const currentAngle = useRef(0); // Store current angle for smoothing
-    const currentStretch = useRef(0); // Store current stretch for smoothing
-    const currentDeformAngle = useRef(0); // Store current deformation angle
-    const currentHighlightAngle = useRef(0); // Separate smoothed angle for highlight
+    const orbRef = React.useRef(null);
+    const pos = React.useRef({ x: 0, y: 0 });
+    const mouse = React.useRef({ x: 0, y: 0 });
+    const currentAngle = React.useRef(0); // Store current angle for smoothing
+    const currentStretch = React.useRef(0); // Store current stretch for smoothing
+    const currentDeformAngle = React.useRef(0); // Store current deformation angle
+    const currentHighlightAngle = React.useRef(0); // Separate smoothed angle for highlight
 
-    useEffect(() => {
+    React.useEffect(() => {
         const orb = orbRef.current;
         
         const handleMouseMove = (e) => {

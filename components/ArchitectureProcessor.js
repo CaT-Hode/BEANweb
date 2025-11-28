@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef } = React;
+
 
 const ArchitectureProcessor = ({ selection, setLevel, onHover }) => {
     const isEfficient = selection.processor === 'efficient';
@@ -6,10 +6,10 @@ const ArchitectureProcessor = ({ selection, setLevel, onHover }) => {
     const layerName = isEfficient ? 'ChannelEnhancementLayer' : 'DenseFeatureProcessor';
     const color = isEfficient ? 'sky' : 'purple';
     
-    const containerRef = useRef(null);
-    const [dimensions, setDimensions] = useState({ width: 320, height: 450 });
+    const containerRef = React.useRef(null);
+    const [dimensions, setDimensions] = React.useState({ width: 320, height: 450 });
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (!containerRef.current) return;
         const observer = new ResizeObserver(entries => {
             for (let entry of entries) {
