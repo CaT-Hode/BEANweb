@@ -1,12 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap");
 
+html,
 body {
   margin: 0;
-  background-color: #050505;
+  padding: 0;
+  background-color: #020205; /* Ensure html has the same background */
+  overscroll-behavior: none; /* Prevent bounce effect on scroll */
+  touch-action: pan-x pan-y; /* explicit touch action */
+}
+
+body {
   color: #e0e0e0;
   font-family: "Inter", sans-serif;
   /* Removed global overflow: hidden to allow scrolling in portrait mode controlled by React */
   cursor: none;
+  min-height: 100vh;
 }
 
 /* Global Cursor Reset */
@@ -53,6 +61,7 @@ body {
 /* --- Range Input Styles --- */
 input[type="range"] {
   -webkit-appearance: none;
+  appearance: none;
   background: transparent;
   width: 100%;
 }
