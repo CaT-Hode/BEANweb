@@ -13,10 +13,10 @@ const Latex = ({ children, displayMode = false }) => {
 const MOBILE_TARGET_WIDTH = 800;
 
 const pages = [
-    { 
-        id:'intro', 
-        title:"Binary Enhanced Adaptive Network (BEANet)", 
-        subtitle:"Redefining the Efficiency-Accuracy Frontier", 
+    {
+        id: 'intro',
+        title: "Binary Enhanced Adaptive Network (BEANet)",
+        subtitle: "Redefining the Efficiency-Accuracy Frontier",
         content: (
             <div className="space-y-6">
                 <div className="text-lg text-gray-300 border-l-4 border-red-500 pl-6 leading-relaxed">
@@ -26,13 +26,13 @@ const pages = [
                     By addressing the <span className="text-white font-medium">Information Bottleneck</span> in traditional BNNs, we introduce a novel hierarchical architecture that preserves feature richness while maximizing hardware efficiency.
                 </div>
             </div>
-        ), 
-        visualComp:IntroChart 
+        ),
+        visualComp: IntroChart
     },
-    { 
-        id:'adabin', 
-        title:"Evolution of Binarization", 
-        subtitle:"From Standard to Optimized", 
+    {
+        id: 'adabin',
+        title: "Evolution of Binarization",
+        subtitle: "From Standard to Optimized",
         content: (
             <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-3">
@@ -73,13 +73,13 @@ const pages = [
                     </div>
                 </div>
             </div>
-        ), 
-        visualComp:AdaBinSim 
+        ),
+        visualComp: AdaBinSim
     },
-    { 
-        id:'exste', 
-        title:"Exponential Straight-Through Estimator (ExSTE)", 
-        subtitle:"Exponential Soft-Through Estimator", 
+    {
+        id: 'exste',
+        title: "Exponential Straight-Through Estimator (ExSTE)",
+        subtitle: "Exponential Soft-Through Estimator",
         content: (
             <div className="space-y-6">
                 <div className="text-gray-300">
@@ -97,13 +97,13 @@ const pages = [
                     This ensures <span className="text-white font-bold">stable convergence</span> and accurate weight updates, unlocking the full potential of binary networks.
                 </div>
             </div>
-        ), 
-        visualComp:ExSTEDemo 
+        ),
+        visualComp: ExSTEDemo
     },
-    { 
-        id:'arch', 
-        title:"BEANet Architecture", 
-        subtitle:"Macro-Micro Hierarchical Design", 
+    {
+        id: 'arch',
+        title: "BEANet Architecture",
+        subtitle: "Macro-Micro Hierarchical Design",
         content: (
             <div className="space-y-6">
                 <div className="text-gray-300">
@@ -123,13 +123,13 @@ const pages = [
                     Click the interactive diagram to explore the <span className="text-white">Stem, Stages, and Processors</span> in detail.
                 </div>
             </div>
-        ), 
-        visualComp:ArchitectureUltimate 
+        ),
+        visualComp: ArchitectureUltimate
     },
-    { 
-        id:'results', 
-        title:"Experiments", 
-        subtitle:"SOTA Performance Validation", 
+    {
+        id: 'results',
+        title: "Experiments",
+        subtitle: "SOTA Performance Validation",
         content: (
             <div className="space-y-6">
                 <div className="text-gray-300">
@@ -149,8 +149,8 @@ const pages = [
                     Achieving state-of-the-art accuracy with comparable FLOPs, proving that <span className="text-white italic">binary need not mean compromised</span>.
                 </div>
             </div>
-        ), 
-        visualComp:ExperimentsRevamped 
+        ),
+        visualComp: ExperimentsRevamped
     }
 ];
 
@@ -159,12 +159,13 @@ const useScale = () => {
     const [visualScale, setVisualScale] = React.useState(1);
     const [textScale, setTextScale] = React.useState(1);
     const [mobileScale, setMobileScale] = React.useState(1);
+    const [textWidth, setTextWidth] = React.useState(35);
 
     React.useEffect(() => {
         const handleResize = () => {
             // Check for portrait mode (mobile/tablet vertical)
             const isPortrait = window.innerHeight / window.innerWidth > 0.75;
-            
+
             if (isPortrait) {
                 setScale(1);
                 setVisualScale(1);
@@ -173,14 +174,14 @@ const useScale = () => {
                 // Mobile Scaling: Ensure content fits in narrow screens
                 // Use a larger virtual width to maintain the spacious desktop layout,
                 // then scale the entire container down to fit the mobile screen.
-                const targetWidth = MOBILE_TARGET_WIDTH; 
-                const padding = 80; 
+                const targetWidth = MOBILE_TARGET_WIDTH;
+                const padding = 0; // Reduced to 0 to fully fill horizontal edge
                 const availableWidth = window.innerWidth - padding;
-                
+
                 if (availableWidth < targetWidth) {
-                    setMobileScale(availableWidth / targetWidth);
+                    setMobileScale((availableWidth / targetWidth) * 0.97);
                 } else {
-                    setMobileScale(1);
+                    setMobileScale(0.97);
                 }
             } else {
                 setMobileScale(1);
@@ -189,35 +190,41 @@ const useScale = () => {
                 setScale(s);
 
                 // Calculate visual scale to fit height
+                // Calculate visual scale to fit height (fill vertical space)
                 const effectiveH = window.innerHeight / s;
-                const reservedSpace = 180; // Header + margins
-                const availableH = effectiveH - reservedSpace;
-                const targetBaseH = 600; // Reduced to 640 to be less aggressive
+                const targetBaseH = 680;
 
-                let vScale = 1;
-                if (availableH < targetBaseH) {
-                    vScale = availableH / targetBaseH;
-                }
-                setVisualScale(vScale);
+                // Dynamic scale to fill height (including top bar area)
+                let vScale = effectiveH / targetBaseH;
 
-                // Increase text size if visual is shrinking, to balance the layout
-                // Cap the boost to avoid excessive sizing
-                if (vScale < 1) {
-                    setTextScale(1 + Math.min((1 - vScale) * 0.6, 0.25));
-                } else {
-                    setTextScale(1);
-                }
+                // Constraint: Text width >= 30%, Font size not too small.
+                // Otherwise reduce demonstration box (visualScale).
+
+                // We fix text width to 30% to maximize visual space while respecting the limit.
+                const safeTextWidth = 30;
+                setTextWidth(safeTextWidth);
+
+                // Calculate visual scale. 
+                // Since Visual Component is anchored right and takes 100% of remaining width,
+                // any scale > 1 would cause overlap with the text area.
+                // Therefore, we cap visualScale at 1.0.
+                let actualVisualScale = Math.min(vScale * 0.94, 1);
+                setVisualScale(actualVisualScale);
+
+                // Text Scale: Ideally matches visual scale, but with a minimum floor.
+                // We use 0.75 as the minimum readable scale.
+                setTextScale(Math.max(actualVisualScale, 0.75));
             }
         };
         window.addEventListener('resize', handleResize);
         handleResize();
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-    return { scale, visualScale, textScale, mobileScale };
+    return { scale, visualScale, textScale, mobileScale, textWidth };
 };
 
 const App = () => {
-    const { scale, visualScale, textScale, mobileScale } = useScale();
+    const { scale, visualScale, textScale, mobileScale, textWidth } = useScale();
     const [curr, setCurr] = React.useState(0);
     const [anim, setAnim] = React.useState(false);
     // State to track layout mode
@@ -228,21 +235,21 @@ const App = () => {
     React.useEffect(() => {
         // Determine if we are in landscape mode based on aspect ratio > 1
         const checkLayout = () => {
-            setIsLandscape((window.innerWidth / window.innerHeight) > (4/3));
+            setIsLandscape((window.innerWidth / window.innerHeight) > (4 / 3));
         };
         // Initial check
         checkLayout();
-        
+
         window.addEventListener('resize', checkLayout);
         return () => window.removeEventListener('resize', checkLayout);
     }, []);
-    
-    const go = (i) => { 
-        if(i>=0 && i<pages.length && !anim) { 
-            setAnim(true); setTimeout(() => { setCurr(i); setAnim(false); }, 500); 
+
+    const go = (i) => {
+        if (i >= 0 && i < pages.length && !anim) {
+            setAnim(true); setTimeout(() => { setCurr(i); setAnim(false); }, 500);
         }
     };
-    
+
     const Visual = pages[curr].visualComp;
 
     // Conditional Style for Global Scaling
@@ -258,36 +265,35 @@ const App = () => {
 
     return (
         <>
-            <MagneticOrb /> 
+            <MagneticOrb />
             <NeuralBackground />
             <div style={containerStyle}>
                 <div className={`w-full relative select-none text-[#e0e0e0] font-['Inter'] transition-all duration-500 ${isLandscape ? 'min-h-full flex flex-col' : 'min-h-full flex flex-col'}`}>
-                    
+
                     {/* Header */}
                     <div className={`flex z-20 shrink-0 transition-all duration-500 ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'}`}>
-                        <div className="font-black tracking-widest text-sky-500 text-3xl magnetic-target cursor-pointer" onClick={()=>go(0)}>BEANet</div>
-                        <div 
+                        <div className="font-black tracking-widest text-sky-500 text-3xl magnetic-target cursor-pointer" onClick={() => go(0)}>BEANet</div>
+                        <div
                             className={`flex items-center transition-all duration-300 magnetic-target ${isLandscape ? 'mr-4' : ''}`}
                             data-magnetic-strength="0.1"
                             onMouseLeave={() => setNavHover(null)}
-                            style={!isLandscape ? { 
+                            style={!isLandscape ? {
                                 transform: `scale(${Math.min(1, (window.innerWidth - 32) / 350)})`,
                                 transformOrigin: 'center top'
                             } : {}}
                         >
-                            {pages.map((_,i)=>(
-                                <button 
+                            {pages.map((_, i) => (
+                                <button
                                     key={i}
-                                    onClick={()=>go(i)}
-                                    onMouseEnter={()=>setNavHover(i)}
+                                    onClick={() => go(i)}
+                                    onMouseEnter={() => setNavHover(i)}
                                     className="relative py-6 px-4 group focus:outline-none"
                                 >
-                                    <div 
-                                        className={`h-1.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-                                            (navHover !== null ? navHover === i : curr === i) 
-                                            ? 'w-24 bg-sky-500 shadow-[0_0_15px_#38bdf8]' 
+                                    <div
+                                        className={`h-1.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${(navHover !== null ? navHover === i : curr === i)
+                                            ? 'w-24 bg-sky-500 shadow-[0_0_15px_#38bdf8]'
                                             : 'w-8 bg-gray-700 group-hover:bg-gray-500'
-                                        }`}
+                                            }`}
                                     />
                                 </button>
                             ))}
@@ -295,21 +301,21 @@ const App = () => {
                     </div>
 
                     {/* Main Content - Responsive Layout Switch */}
-                    <div className={`flex-1 relative z-10 px-8 transition-all duration-500 ${isLandscape ? 'flex flex-row items-start' : 'flex flex-col pb-24'}`}>
-                        
+                    <div className={`flex-1 relative z-10 transition-all duration-500 ${isLandscape ? 'px-8 flex flex-row items-start' : 'px-0 flex flex-col pb-24'}`}>
+
                         {/* Text Section */}
-                        <div 
-                            className={`transition-all duration-500 ${isLandscape ? 'w-[35%] pr-12 h-full flex flex-col justify-start pt-12 pointer-events-none' : 'w-full mb-8 mt-4'}`}
-                            style={isLandscape ? { transform: `scale(${textScale})`, transformOrigin: 'top left' } : {}}
+                        <div
+                            className={`transition-all duration-500 ${isLandscape ? 'pr-12 h-full flex flex-col justify-start pt-12 pointer-events-none' : 'w-full mb-8 mt-4 px-8'}`}
+                            style={isLandscape ? { width: `${textWidth}%`, transform: `scale(${textScale})`, transformOrigin: 'top left' } : {}}
                         >
-                            <div className={`transition-all duration-700 transform ${anim?'opacity-0 -translate-y-8':'opacity-100 translate-y-0'}`}>
+                            <div className={`transition-all duration-700 transform ${anim ? 'opacity-0 -translate-y-8' : 'opacity-100 translate-y-0'}`}>
                                 <div className="glass-capsule mb-6">
                                     <div className="glass-filter"></div>
                                     <div className="glass-overlay" style={{ background: 'rgba(14, 165, 233, 0.1)' }}></div>
                                     <div className="glass-specular"></div>
                                     <div className="glass-content gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-                                        <span className="text-sky-300 text-xs font-bold tracking-widest">SECTION 0{curr+1}</span>
+                                        <span className="text-sky-300 text-xs font-bold tracking-widest">SECTION 0{curr + 1}</span>
                                     </div>
                                 </div>
                                 <h1 className={`${isLandscape ? 'text-4xl' : 'text-2xl'} font-black text-white mb-4 leading-tight`}>{pages[curr].title}</h1>
@@ -318,10 +324,11 @@ const App = () => {
                             </div>
                         </div>
 
-                    {/* Visual Section */}
-                        <div className={`relative flex transition-all duration-500 ${isLandscape ? 'justify-end items-start flex-1 pl-4 h-full pt-4' : 'justify-center items-center w-full min-h-[50vh] overflow-hidden'}`}>
-                                <div className={`w-full rounded-3xl p-1 shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex flex-col border border-white/10 flex-shrink-0
-                                    ${anim?'opacity-0 scale-95 translate-x-20':'opacity-100 scale-100 translate-x-0'}
+                        {/* Visual Section */}
+                        <div className={`relative flex transition-all duration-500 ${isLandscape ? 'justify-end items-start flex-1 pl-4 h-full pt-0' : 'justify-center items-center w-full min-h-[50vh]'}`}>
+                            <div className={`w-full shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex flex-col border border-white/10 flex-shrink-0
+                                    rounded-3xl p-1
+                                    ${anim ? 'opacity-0 scale-95 translate-x-20' : 'opacity-100 scale-100 translate-x-0'}
                                     ${curr === 0 ? 'aspect-[4/3] min-h-[600px]' : 'min-h-[50vh]'}
                                 `}
                                 style={{
@@ -332,14 +339,14 @@ const App = () => {
                                     transformOrigin: isLandscape ? 'top right' : 'top center',
                                     width: (!isLandscape && mobileScale < 1) ? `${MOBILE_TARGET_WIDTH}px` : '100%'
                                 }}
-                                >
-                                    <div className="w-full flex-1 rounded-2xl overflow-hidden relative flex flex-col">
-                                        <div className="relative w-full flex-1 flex flex-col"> {/* Removed overflow-hidden to allow expansion */}
-                                            {Visual && <Visual isActive={!anim} />}
-                                        </div>
+                            >
+                                <div className={`w-full flex-1 relative flex flex-col rounded-2xl`}>
+                                    <div className="relative w-full flex-1 flex flex-col"> {/* Removed overflow-hidden to allow expansion */}
+                                        {Visual && <Visual isActive={!anim} />}
                                     </div>
-                                    
                                 </div>
+
+                            </div>
                         </div>
                     </div>
 
@@ -357,7 +364,7 @@ const App = () => {
             </div>
 
             {/* Navigation Buttons - Fixed to Viewport Bottom Right */}
-            <div 
+            <div
                 className="fixed bottom-8 right-8 flex gap-4 z-50"
                 style={{
                     transform: `scale(${scale})`,
@@ -425,22 +432,22 @@ const App = () => {
                         justify-content: center;
                     }
                 `}</style>
-                
-                <button onClick={()=>go(curr-1)} disabled={curr===0} className="glass-btn magnetic-target group">
+
+                <button onClick={() => go(curr - 1)} disabled={curr === 0} className="glass-btn magnetic-target group">
                     <div className="glass-filter"></div>
                     <div className="glass-overlay"></div>
                     <div className="glass-specular"></div>
                     <div className="glass-content">
-                        <Icons.ArrowLeft className="text-white group-hover:-translate-x-1 transition-transform"/>
+                        <Icons.ArrowLeft className="text-white group-hover:-translate-x-1 transition-transform" />
                     </div>
                 </button>
-                
-                <button onClick={()=>go(curr+1)} disabled={curr===pages.length-1} className="glass-btn magnetic-target group">
+
+                <button onClick={() => go(curr + 1)} disabled={curr === pages.length - 1} className="glass-btn magnetic-target group">
                     <div className="glass-filter"></div>
                     <div className="glass-overlay"></div>
                     <div className="glass-specular"></div>
                     <div className="glass-content">
-                        <Icons.ArrowRight className="text-white group-hover:translate-x-1 transition-transform"/>
+                        <Icons.ArrowRight className="text-white group-hover:translate-x-1 transition-transform" />
                     </div>
                 </button>
             </div>

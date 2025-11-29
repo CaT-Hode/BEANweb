@@ -11,23 +11,23 @@ const MagneticOrb = () => {
 
     React.useEffect(() => {
         const orb = orbRef.current;
-        
+
         const handleMouseMove = (e) => {
             let clientX = e.clientX;
             let clientY = e.clientY;
-            
+
             const target = e.target.closest('.magnetic-target');
             if (target) {
                 const rect = target.getBoundingClientRect();
                 let centerX, centerY;
-                
+
                 if (target.tagName === 'INPUT' && target.type === 'range') {
                     // Special handling for sliders
                     const min = parseFloat(target.min) || 0;
                     const max = parseFloat(target.max) || 100;
                     const val = parseFloat(target.value) || 0;
                     const ratio = (val - min) / (max - min);
-                    const thumbWidth = 16; 
+                    const thumbWidth = 16;
                     const availableWidth = rect.width - thumbWidth;
                     centerX = rect.left + (thumbWidth / 2) + (ratio * availableWidth);
                     centerY = rect.top + rect.height / 2;
@@ -35,27 +35,27 @@ const MagneticOrb = () => {
                     centerX = rect.left + rect.width / 2;
                     centerY = rect.top + rect.height / 2;
                 }
-                
+
                 const isLarge = Math.max(rect.width, rect.height) > 150;
                 const strength = (parseFloat(target.dataset.magneticStrength) || 0.3) * (isLarge ? 1.5 : 3);
-                
+
                 mouse.current.x = clientX + (centerX - clientX) * strength;
                 mouse.current.y = clientY + (centerY - clientY) * strength;
-                
+
                 if (!orb.classList.contains('active')) {
                     orb.classList.add('active');
                     // Randomize animation start point for unique shape every time
                     orb.style.animationDelay = `-${Math.random() * 4}s`;
                 }
                 const size = Math.min(Math.max(rect.width, rect.height) + 20, 80);
-                orb.style.width = `${size}px`; 
+                orb.style.width = `${size}px`;
                 orb.style.height = `${size}px`;
             } else {
                 mouse.current.x = clientX;
                 mouse.current.y = clientY;
-                
+
                 orb.classList.remove('active');
-                orb.style.width = '20px'; 
+                orb.style.width = '20px';
                 orb.style.height = '20px';
             }
         };
@@ -64,27 +64,27 @@ const MagneticOrb = () => {
             // Calculate movement delta (velocity)
             const dx = mouse.current.x - pos.current.x;
             const dy = mouse.current.y - pos.current.y;
-            
+
             // Apply smoothing (spring-like follow)
             // Increased from 0.15 to 0.25 for better responsiveness (User Request)
             const vx = dx * 0.25;
             const vy = dy * 0.25;
-            
+
             pos.current.x += vx;
             pos.current.y += vy;
 
             // Physics for Droplet Deformation
             const speed = Math.sqrt(vx * vx + vy * vy);
-            
+
             // Calculate target angle
             let targetAngle = Math.atan2(vy, vx);
-            
+
             // Smooth rotation interpolation
             // Handle angle wrapping (-PI to PI)
             let angleDiff = targetAngle - currentAngle.current;
             while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
             while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-            
+
             // Only update angle if moving fast enough to have a clear direction
             if (speed > 0.5) {
                 // Slower rotation smoothing for "drifting" feel (0.15 -> 0.08)
@@ -94,8 +94,8 @@ const MagneticOrb = () => {
 
             // Stretch factor: 0 at rest, increases with speed
             // Speed NO LONGER increases size for active orb (User request)
-            const stretch = Math.min(speed * 0.05, 0.5); 
-            
+            const stretch = Math.min(speed * 0.05, 0.5);
+
             // Magnetic Pull Deformation
             // If active (attached), calculate pull vector from orb center to true mouse position
             let targetStretch = 0;
@@ -105,9 +105,9 @@ const MagneticOrb = () => {
                 const dx_mag = mouse.current.x - pos.current.x;
                 const dy_mag = mouse.current.y - pos.current.y;
                 const dist_mag = Math.sqrt(dx_mag * dx_mag + dy_mag * dy_mag);
-                
+
                 // Stretch based on how far the mouse pulls the orb
-                targetStretch = Math.min(dist_mag * 0.005, 0.2); 
+                targetStretch = Math.min(dist_mag * 0.005, 0.2);
                 targetDeformAngle = Math.atan2(dy_mag, dx_mag);
             }
 
@@ -135,18 +135,18 @@ const MagneticOrb = () => {
                     // 1. No rotation of the shape (container).
                     // 2. No general size increase with speed.
                     // 3. Directional stretch based on movement (X/Y independent to avoid rotation).
-                    
+
                     // Calculate stretch based on velocity components directly
                     // vx, vy are already smoothed velocities
                     const stretchX = Math.abs(vx) * 0.02; // Tune sensitivity
                     const stretchY = Math.abs(vy) * 0.02;
-                    
+
                     // Limit stretch to avoid extreme distortion
                     const sX = 1 + Math.min(stretchX, 0.3);
                     const sY = 1 + Math.min(stretchY, 0.3);
 
                     // Morph to circle when moving fast
-                    const speedMag = Math.sqrt(vx*vx + vy*vy);
+                    const speedMag = Math.sqrt(vx * vx + vy * vy);
                     if (speedMag > 2) {
                         orb.classList.add('moving-fast');
                     } else {
@@ -158,16 +158,16 @@ const MagneticOrb = () => {
                         translate(-50%, -50%) 
                         scale(${sX}, ${sY})
                     `;
-                    
+
                     // Rotate Highlight AND Shader together
                     if (specular || filterLayer) {
                         const targetRotAngle = Math.atan2(vy, vx); // Use velocity direction for highlight
-                        
+
                         // Ultra-slow smoothing for highlight rotation
                         let hAngleDiff = targetRotAngle - currentHighlightAngle.current;
                         while (hAngleDiff > Math.PI) hAngleDiff -= Math.PI * 2;
                         while (hAngleDiff < -Math.PI) hAngleDiff += Math.PI * 2;
-                        currentHighlightAngle.current += hAngleDiff * 0.02; 
+                        currentHighlightAngle.current += hAngleDiff * 0.02;
 
                         const rotAngle = currentHighlightAngle.current;
 
@@ -183,7 +183,7 @@ const MagneticOrb = () => {
                             const hx = Math.cos(rotAngle + Math.PI * 0.75) * offset;
                             const hy = Math.sin(rotAngle + Math.PI * 0.75) * offset;
 
-                            specular.style.transform = 'none'; 
+                            specular.style.transform = 'none';
                             specular.style.boxShadow = `
                                 inset ${hx}px ${hy}px 8px rgba(255, 255, 255, 0.9),
                                 inset ${-hx}px ${-hy}px 8px rgba(0, 0, 0, 0.2),
@@ -210,19 +210,19 @@ const MagneticOrb = () => {
                         filterLayer.style.transform = 'none';
                     }
                 }
-                
+
                 // Always a circle (border-radius handles the oval shape via scale or animation)
                 // orb.style.borderRadius = '50%'; // Handled by CSS animation in active state
             }
-            
+
             requestAnimationFrame(loop);
         };
 
         const handleTouchMove = (e) => {
             if (e.touches.length > 0) {
                 // Use the first touch point
-                handleMouseMove({ 
-                    clientX: e.touches[0].clientX, 
+                handleMouseMove({
+                    clientX: e.touches[0].clientX,
                     clientY: e.touches[0].clientY,
                     target: document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY) || e.target
                 });
@@ -232,14 +232,14 @@ const MagneticOrb = () => {
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('touchmove', handleTouchMove, { passive: true });
         window.addEventListener('touchstart', handleTouchMove, { passive: true });
-        
+
         const frameId = requestAnimationFrame(loop);
-        
-        return () => { 
-            window.removeEventListener('mousemove', handleMouseMove); 
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('touchstart', handleTouchMove);
-            cancelAnimationFrame(frameId); 
+            cancelAnimationFrame(frameId);
         };
     }, []);
 

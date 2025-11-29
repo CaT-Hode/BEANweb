@@ -8,7 +8,9 @@ const NeuralBackground = () => {
 
         const ctx = canvas.getContext('2d');
         let width, height;
-        
+        let blobs = []; // Declare blobs here
+        let dustParticles = []; // Declare dustParticles here
+
         // --- Configuration ---
         // 1. Blob Colors (Dark Red/Purple/Navy)
         const BLOB_COLORS = [
@@ -19,21 +21,15 @@ const NeuralBackground = () => {
             { r: 127, g: 29, b: 29 },   // Dark Red
             { r: 15, g: 23, b: 42 }     // Slate 900 (Dark Blue-Grey)
         ];
-
-        // 2. Dust/Particle Colors (Blue/Purple/White Glow)
         const DUST_COLORS = [
-            'rgba(56, 189, 248, 0.8)',  // Sky Blue
-            'rgba(168, 85, 247, 0.8)',  // Purple
-            'rgba(255, 255, 255, 0.6)'  // White
+            'rgba(255, 255, 255, 0.8)', // White
+            'rgba(200, 200, 255, 0.8)', // Light Blue
+            'rgba(255, 200, 200, 0.8)'  // Light Pink
         ];
-
-        let blobs = [];
-        let dustParticles = [];
-
         const resize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            initElements();
+            if (blobs.length === 0) initElements();
         };
 
         // --- Classes ---
@@ -49,7 +45,7 @@ const NeuralBackground = () => {
                 this.y = Math.random() * height;
                 this.color = BLOB_COLORS[Math.floor(Math.random() * BLOB_COLORS.length)];
                 this.alpha = Math.random() * 0.2 + 0.15; // Slightly more opaque
-                
+
                 this.baseX = this.x;
                 this.baseY = this.y;
                 this.wanderRadius = 200;
@@ -68,20 +64,20 @@ const NeuralBackground = () => {
                 let dy = mouse.y - this.y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 const interactDist = 800;
-                
+
                 let interactX = 0;
                 let interactY = 0;
 
                 if (dist < interactDist) {
                     const force = (interactDist - dist) / interactDist;
-                    interactX = -dx * force * 0.05; 
+                    interactX = -dx * force * 0.05;
                     interactY = -dy * force * 0.05;
                 }
 
                 const targetX = wanderX + interactX;
                 const targetY = wanderY + interactY;
 
-                this.x += (targetX - this.x) * 0.01; 
+                this.x += (targetX - this.x) * 0.01;
                 this.y += (targetY - this.y) * 0.01;
             }
 
@@ -108,7 +104,7 @@ const NeuralBackground = () => {
                 this.y = Math.random() * height;
                 this.vx = (Math.random() - 0.5) * 0.05; // Much slower initial
                 this.vy = (Math.random() - 0.5) * 0.05;
-                this.size = Math.random() * 2.5 + 0.5; // Random size 0.5 - 3.0 
+                this.size = Math.random() * 2.5 + 0.5; // Random size 0.5 - 3.0
                 this.color = DUST_COLORS[Math.floor(Math.random() * DUST_COLORS.length)];
                 this.baseAlpha = Math.random() * 0.4 + 0.2;
                 this.alpha = this.baseAlpha;
@@ -135,12 +131,12 @@ const NeuralBackground = () => {
                 let dx = this.x - mouse.x;
                 let dy = this.y - mouse.y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
-                const interactDist = 100; 
+                const interactDist = 100;
 
                 if (dist < interactDist) {
                     const force = (interactDist - dist) / interactDist;
                     // Push away - extremely subtle
-                    this.vx += (dx / dist) * force * 0.005; 
+                    this.vx += (dx / dist) * force * 0.005;
                     this.vy += (dy / dist) * force * 0.005;
                 }
 
@@ -161,14 +157,14 @@ const NeuralBackground = () => {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
-                
+
                 const currentAlpha = Math.max(0, Math.min(1, this.alpha));
                 ctx.globalAlpha = currentAlpha;
-                
+
                 // Dynamic Glow effect based on alpha (Twinkle)
-                ctx.shadowBlur = 8 + (currentAlpha * 10); 
+                ctx.shadowBlur = 8 + (currentAlpha * 10);
                 ctx.shadowColor = this.color;
-                
+
                 ctx.fill();
                 ctx.shadowBlur = 0;
                 ctx.globalAlpha = 1;
@@ -178,7 +174,7 @@ const NeuralBackground = () => {
         const initElements = () => {
             blobs = [];
             dustParticles = [];
-            
+
             // 8 Large Background Blobs
             for (let i = 0; i < 8; i++) {
                 blobs.push(new Blob());
@@ -203,7 +199,7 @@ const NeuralBackground = () => {
             ctx.fillRect(0, 0, width, height);
 
             // Draw Blobs (Soft, blended)
-            ctx.globalCompositeOperation = 'screen'; 
+            ctx.globalCompositeOperation = 'screen';
             blobs.forEach(blob => {
                 blob.update(mouseRef.current);
                 blob.draw();
@@ -232,8 +228,8 @@ const NeuralBackground = () => {
     }, []);
 
     return (
-        <canvas 
-            ref={canvasRef} 
+        <canvas
+            ref={canvasRef}
             className="fixed inset-0 pointer-events-none z-0"
             style={{ opacity: 1 }}
         />
