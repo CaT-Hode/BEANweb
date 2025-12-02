@@ -200,7 +200,7 @@ const IntroChart = () => {
                             {/* Visible Point */}
                             <div 
                                 className={`absolute rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20 border border-black transition-all duration-300
-                                    ${isPointHovered ? 'w-4 h-4 ring-4 ring-white/20' : 'w-2.5 h-2.5'}
+                                    ${isPointHovered ? 'w-5 h-5 ring-4 ring-white/20' : 'w-3 h-3'}
                                 `}
                                 style={{
                                     backgroundColor: s.color,

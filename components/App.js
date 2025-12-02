@@ -354,9 +354,9 @@ const App = () => {
                                     ${curr === 0 ? 'aspect-[4/3] min-h-[600px]' : 'min-h-[50vh]'}
                                 `}
                                 style={{
-                                    backdropFilter: 'blur(20px)',
-                                    WebkitBackdropFilter: 'blur(20px)',
-                                    backgroundColor: 'rgba(20, 20, 30, 0.4)',
+                                    backdropFilter: 'blur(8px)',
+                                    WebkitBackdropFilter: 'blur(8px)',
+                                    backgroundColor: curr === 0 ? 'rgba(20, 20, 30, 0.6)' : 'rgba(20, 20, 30, 0.35)',
                                     transform: isLandscape ? `scale(${visualScale})` : `scale(${mobileScale})`,
                                     transformOrigin: isLandscape ? 'top right' : 'top center',
                                     width: isLandscape ? '907px' : (mobileScale < 1 ? `${MOBILE_TARGET_WIDTH}px` : '100%')
@@ -380,7 +380,7 @@ const App = () => {
 
             {/* Navigation Buttons - Fixed to Viewport Bottom Right */}
             <div
-                className="fixed bottom-8 right-8 flex gap-4 z-50"
+                className="nav-buttons-container fixed bottom-8 right-8 flex gap-4 z-50"
                 style={{
                     transform: `scale(${scale})`,
                     transformOrigin: 'bottom right'

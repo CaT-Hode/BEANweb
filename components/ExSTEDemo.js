@@ -182,6 +182,89 @@ const ExSTEDemo = () => {
         ctx.stroke();
     }, [exponent]);
 
+    // Thumb Animation State
+    const thumbPoints = React.useRef([50, 50, 50, 50, 50, 50, 50, 50]); 
+    const thumbPhase = React.useRef(0);
+    const [thumbStyle, setThumbStyle] = React.useState({});
+
+    React.useEffect(() => {
+        let frameId;
+        const loop = () => {
+            // Wobble Logic
+            thumbPhase.current += 0.05 + animSpeed * 0.1; // Faster wobble when moving
+            const t = thumbPhase.current;
+
+            // Target shape (Wobble vs Sphere)
+            // If moving fast, become more spherical (aerodynamic), else wobble
+            const isMoving = animSpeed > 0.1;
+            
+            const wobbleTarget = [
+                50 + Math.sin(t) * 15,          
+                50 + Math.cos(t * 0.8) * 15,    
+                50 + Math.sin(t * 1.2) * 15,    
+                50 + Math.cos(t * 0.9) * 15,    
+                50 + Math.cos(t * 1.1) * 15,    
+                50 + Math.sin(t * 0.7) * 15,    
+                50 + Math.cos(t * 1.3) * 15,    
+                50 + Math.sin(t * 0.6) * 15     
+            ];
+
+            const currentTarget = isMoving ? [50, 50, 50, 50, 50, 50, 50, 50] : wobbleTarget;
+            const lerpSpeed = isMoving ? 0.1 : 0.05;
+
+            for (let i = 0; i < 8; i++) {
+                thumbPoints.current[i] += (currentTarget[i] - thumbPoints.current[i]) * lerpSpeed;
+            }
+
+            const p = thumbPoints.current;
+            const borderRadius = `${p[0]}% ${p[1]}% ${p[2]}% ${p[3]}% / ${p[4]}% ${p[5]}% ${p[6]}% ${p[7]}%`;
+
+            // Deformation (Stretch & Rotate)
+            // Direction is already tracked in 'direction.current' (1 or -1)
+            // We want to stretch along X axis
+            const stretch = Math.min(animSpeed * 0.3, 0.4);
+            let scaleX = 1 + stretch;
+            let scaleY = 1 - stretch * 0.5;
+            
+            // Boundary Elasticity (Squash at ends)
+            const currentVal = exponentRef.current;
+            const distMin = Math.abs(currentVal - (-2));
+            const distMax = Math.abs(currentVal - 1);
+            const squashThreshold = 0.2; // Range within which squash happens
+            
+            if (distMin < squashThreshold) {
+                const strength = Math.pow((squashThreshold - distMin) / squashThreshold, 2); // Non-linear for softer feel
+                // Squash X, Expand Y (Minimal lateral compression)
+                scaleX *= (1 - strength * 0.05);
+                scaleY *= (1 + strength * 0.05);
+                // Shrink overall size (More pronounced shrinking)
+                const shrinkFactor = 1 - strength * 0.25;
+                scaleX *= shrinkFactor;
+                scaleY *= shrinkFactor;
+            } else if (distMax < squashThreshold) {
+                const strength = Math.pow((squashThreshold - distMax) / squashThreshold, 2);
+                scaleX *= (1 - strength * 0.05);
+                scaleY *= (1 + strength * 0.05);
+                // Shrink overall size
+                const shrinkFactor = 1 - strength * 0.25;
+                scaleX *= shrinkFactor;
+                scaleY *= shrinkFactor;
+            }
+            
+            // Simple tilt based on direction
+            const rotateDeg = direction.current * (animSpeed * 20); 
+
+            setThumbStyle({
+                borderRadius,
+                transform: `scale(${scaleX}, ${scaleY}) rotate(${rotateDeg}deg)`
+            });
+
+            frameId = requestAnimationFrame(loop);
+        };
+        frameId = requestAnimationFrame(loop);
+        return () => cancelAnimationFrame(frameId);
+    }, [animSpeed]);
+
     // Calculate thumb position percentage
     const percent = ((exponent - (-2)) / (1 - (-2))) * 100;
 
@@ -211,9 +294,9 @@ const ExSTEDemo = () => {
                 }
             `}</style>
 
-            <div className="relative w-full aspect-[16/10] bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-inner flex-none">
+            <div className="relative w-full aspect-[16/10] bg-black/50 border border-white/10 rounded-2xl overflow-hidden shadow-inner flex-none">
                 <canvas ref={canvasRef} className="w-full h-full block" />
-                <div className="absolute top-4 left-4 text-right space-y-1 bg-black/60 p-2 rounded-lg border border-white/10 backdrop-blur-sm">
+                <div className="absolute top-4 left-4 text-right space-y-1 bg-black/60 p-2 rounded-lg border border-white/10 backdrop-blur-[8px]">
                     <div className="text-sky-400 text-xs font-mono font-bold flex items-center gap-2"><div className="w-3 h-1 bg-sky-400 rounded"></div> Forward F(x)</div>
                     <div className="text-amber-400 text-xs font-mono font-bold flex items-center gap-2"><div className="w-3 h-1 bg-amber-400 rounded"></div> Gradient F'(x)</div>
                 </div>
@@ -240,17 +323,62 @@ const ExSTEDemo = () => {
                     <div className="absolute left-0 right-0 h-1 bg-gray-700 rounded-full z-0 pointer-events-none"></div>
                     <div className="absolute left-0 h-1 bg-sky-500 rounded-full z-0 pointer-events-none" style={{ width: `${percent}%` }}></div>
 
-                    {/* Custom Liquid Thumb */}
-                    <LiquidGlass 
-                        className="liquid-glass-thumb z-10"
+                    {/* Custom Orb Thumb - Mimicking MagneticOrb Structure */}
+                    <div 
+                        className="absolute pointer-events-none z-10"
                         style={{ 
                             left: `calc(${percent}% - 12px)`, 
-                            transform: !isHovering 
-                                ? `scale(${1 + animSpeed * 1.2})` 
-                                : `scale(1)` 
+                            width: '24px',
+                            height: '24px',
+                            // Combine hover scale with deformation
+                            transform: `${!isHovering ? `scale(${1 + animSpeed * 0.5})` : 'scale(1)'} ${thumbStyle.transform || ''}`
                         }}
-                        filterConfig={{ scale: 8, freq: "0.05" }}
-                    />
+                    >
+                        <div className="w-full h-full relative overflow-hidden transition-all duration-75" style={{
+                            borderRadius: thumbStyle.borderRadius || '50%',
+                            boxShadow: `
+                                inset 2px 2px 6px rgba(14, 165, 233, 0.8),
+                                inset -2px -2px 6px rgba(0, 0, 0, 0.1),
+                                inset 0 0 15px rgba(14, 165, 233, 0.2),
+                                0 4px 12px rgba(0, 0, 0, 0.15)
+                            `
+                        }}>
+                            {/* Blur Layer */}
+                            <div className="absolute inset-0 z-1 opacity-0 transition-opacity duration-300" style={{
+                                backdropFilter: 'blur(1px) saturate(1.2)',
+                                WebkitBackdropFilter: 'blur(1px) saturate(1.2)'
+                            }}></div>
+                            
+                            {/* Filter Layer (Liquid Distortion) */}
+                            <div className="absolute inset-[-50%] z-0 opacity-100 transition-opacity duration-300" style={{
+                                filter: 'url(#orb-dist)',
+                                backdropFilter: 'saturate(1.5) contrast(1.05)',
+                                WebkitBackdropFilter: 'saturate(1.5) contrast(1.05)',
+                                background: 'rgba(14, 165, 233, 0.4)' // Sky blue tint
+                            }}></div>
+
+                            {/* Shadows Layer */}
+                            <div className="absolute inset-0 z-5 pointer-events-none" style={{
+                                borderRadius: 'inherit',
+                                boxShadow: `
+                                    inset 2px 2px 6px rgba(14, 165, 233, 0.8),
+                                    inset -2px -2px 6px rgba(0, 0, 0, 0.1),
+                                    inset 0 0 15px rgba(14, 165, 233, 0.2),
+                                    0 4px 12px rgba(0, 0, 0, 0.15)
+                                `
+                            }}></div>
+
+                            {/* Specular Highlight Layer */}
+                            <div className="absolute inset-0 z-10 opacity-100 transition-opacity duration-300" style={{
+                                borderRadius: 'inherit',
+                                boxShadow: `
+                                    inset 5px 5px 12px rgba(255, 255, 255, 0.9),
+                                    inset -5px -5px 12px rgba(0, 0, 0, 0.2),
+                                    0 0 15px rgba(14, 165, 233, 0.4)
+                                `
+                            }}></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="text-center mt-2">

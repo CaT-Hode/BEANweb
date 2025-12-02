@@ -421,9 +421,9 @@ const AdaBinSim = ({ isActive }) => {
 
     return (
             <div className="w-full h-full flex flex-col gap-6 items-center justify-center">
-                <div className="relative w-full aspect-[16/11] bg-black/40 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-inner flex-none">
+                <div className="relative w-full aspect-[16/11] bg-black/50 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-inner flex-none">
                     <canvas ref={canvasRef} className="w-full h-full block" />
-                    <div className="absolute top-2 left-2 z-10 flex flex-col bg-black/60 p-2 rounded-[2rem] border-4 border-white/10 backdrop-blur-xl shadow-2xl magnetic-target" data-magnetic-strength="0.05">
+                    <div className="absolute top-2 left-2 z-10 flex flex-col bg-black/60 p-2 rounded-[2rem] border-4 border-white/10 backdrop-blur-[8px] shadow-2xl magnetic-target" data-magnetic-strength="0.05">
                         <div 
                             className={`absolute left-2 right-2 top-2 rounded-[1.5rem] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] border-[3px] ${
                                 activeTab === 'standard' ? 'bg-white/10 border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2)]' :
@@ -442,7 +442,7 @@ const AdaBinSim = ({ isActive }) => {
                     <LiquidGlass 
                         as="button"
                         onClick={generateParticles} 
-                        className="liquid-glass-btn magnetic-target group absolute bottom-[5.5rem] left-2 rounded-full w-20 h-20"
+                        className="liquid-glass-btn magnetic-target group absolute bottom-2 left-2 rounded-full w-20 h-20"
                     >
                         <Icons.Refresh className="w-8 h-8 text-white group-hover:rotate-180 transition-transform duration-700"/>
                     </LiquidGlass>

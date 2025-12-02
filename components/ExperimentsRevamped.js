@@ -162,7 +162,7 @@ const ExperimentsRevamped = () => {
             `}</style>
             <div 
                 ref={containerRef}
-                className="relative flex p-2 bg-white/5 rounded-full self-center backdrop-blur-sm border border-white/10 w-full max-w-2xl shadow-2xl overflow-hidden"
+                className="relative flex p-2 bg-white/5 rounded-full self-center backdrop-blur-[2px] border border-white/10 w-full max-w-2xl shadow-2xl overflow-hidden"
             >
                 {/* Buttons (Layer 0 - Under Glass - Always Visible) */}
                 {tabs.map((key, idx) => {
@@ -245,7 +245,7 @@ const ExperimentsRevamped = () => {
                 </div>
             </div>
             
-            <div key={tab} className="w-full bg-black/20 border border-white/5 rounded-2xl p-6 relative animate-slide-in-up">
+            <div key={tab} className="w-full bg-black/30 border border-white/5 rounded-2xl p-6 relative animate-slide-in-up">
                 
                 {/* IMAGENET TAB */}
                 {tab === 'imagenet' && (
@@ -309,7 +309,7 @@ const ExperimentsRevamped = () => {
                                 <div className="grid gap-3">
                                     {section.data.map((d, i) => (
                                         <div key={i} 
-                                             className={`relative p-3 rounded-xl border backdrop-blur-sm transition-all duration-500 magnetic-target group animate-fade-in-up
+                                             className={`relative p-3 rounded-xl border backdrop-blur-[2px] transition-all duration-500 magnetic-target group animate-fade-in-up
                                                 ${d.highlight ? 'bg-sky-900/20 border-sky-500/50 shadow-[0_0_15px_rgba(14,165,233,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}
                                              `}
                                              style={{animationDelay: `${i * 100}ms`}}
@@ -494,7 +494,7 @@ const ExperimentsRevamped = () => {
                                                 </div>
 
                                                 {/* Card */}
-                                                <div className={`flex-1 rounded-xl border backdrop-blur-sm transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden
+                                                <div className={`flex-1 rounded-xl border backdrop-blur-[8px] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden
                                                     ${isExpanded ? 'h-28 bg-green-900/30 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.15)]' : 'h-12 bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10'}
                                                     ${isLast && !isExpanded ? 'bg-green-500/5 border-green-500/20' : ''}
                                                 `}>

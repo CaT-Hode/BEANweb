@@ -10,6 +10,7 @@ const NeuralBackground = () => {
         let width, height;
         let blobs = []; // Declare blobs here
         let dustParticles = []; // Declare dustParticles here
+        let sizeScale = 1; // Scale factor for sizes based on resolution
 
         // --- Configuration ---
         // 1. Blob Colors (Dark Red/Purple/Navy)
@@ -27,9 +28,35 @@ const NeuralBackground = () => {
             'rgba(255, 200, 200, 0.8)'  // Light Pink
         ];
         const resize = () => {
+            const oldWidth = width;
+            const oldHeight = height;
+
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            if (blobs.length === 0) initElements();
+
+            // Calculate size scale based on standard 1920x1080 resolution
+            sizeScale = Math.sqrt((width * height) / (1920 * 1080));
+
+            if (blobs.length === 0) {
+                initElements();
+            } else if (oldWidth > 0 && oldHeight > 0) {
+                const scaleX = width / oldWidth;
+                const scaleY = height / oldHeight;
+
+                blobs.forEach(blob => {
+                    blob.x *= scaleX;
+                    blob.y *= scaleY;
+                    blob.baseX *= scaleX;
+                    blob.baseY *= scaleY;
+                    blob.radius = blob.baseRadius * sizeScale;
+                });
+
+                dustParticles.forEach(p => {
+                    p.x *= scaleX;
+                    p.y *= scaleY;
+                    p.size = p.baseSize * sizeScale;
+                });
+            }
         };
 
         // --- Classes ---
@@ -40,17 +67,18 @@ const NeuralBackground = () => {
             }
 
             init() {
-                this.radius = Math.random() * 300 + 250; // Larger blobs
+                this.baseRadius = Math.random() * 300 + 300; 
+                this.radius = this.baseRadius * sizeScale;
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
                 this.color = BLOB_COLORS[Math.floor(Math.random() * BLOB_COLORS.length)];
-                this.alpha = Math.random() * 0.2 + 0.15; // Slightly more opaque
+                this.alpha = Math.random() * 0.2 + 0.15; 
 
                 this.baseX = this.x;
                 this.baseY = this.y;
                 this.wanderRadius = 200;
                 this.wanderTheta = Math.random() * Math.PI * 2;
-                this.wanderSpeed = Math.random() * 0.001 + 0.0005;
+                this.wanderSpeed = Math.random() * 0.0002 + 0.0001;
             }
 
             update(mouse) {
@@ -63,22 +91,22 @@ const NeuralBackground = () => {
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
-                const interactDist = 800;
+                const interactDist = 600;
 
                 let interactX = 0;
                 let interactY = 0;
 
                 if (dist < interactDist) {
                     const force = (interactDist - dist) / interactDist;
-                    interactX = -dx * force * 0.2;
-                    interactY = -dy * force * 0.2;
+                    interactX = -dx * force * 0.5;
+                    interactY = -dy * force * 0.5;
                 }
 
                 const targetX = wanderX + interactX;
                 const targetY = wanderY + interactY;
 
-                this.x += (targetX - this.x) * 0.01;
-                this.y += (targetY - this.y) * 0.01;
+                this.x += (targetX - this.x) * 0.002; // Slower easing
+                this.y += (targetY - this.y) * 0.002;
             }
 
             draw() {
@@ -102,74 +130,100 @@ const NeuralBackground = () => {
             init() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.05; // Much slower initial
-                this.vy = (Math.random() - 0.5) * 0.05;
-                this.size = Math.random() * 4.0 + 0.5; // Random size 0.5 - 4.5 (Increased range)
+                
+                // Significantly increased size: Radius 5px - 20px
+                this.baseSize = Math.random() * 15 + 5;
+                this.size = this.baseSize * sizeScale;
+                
+                // Speed inversely proportional to size
+                const speedFactor = 5 / this.size; 
+                const baseSpeed = 0.05;
+
+                this.vx = (Math.random() - 0.5) * baseSpeed * speedFactor;
+                this.vy = (Math.random() - 0.5) * baseSpeed * speedFactor;
+                
                 this.color = DUST_COLORS[Math.floor(Math.random() * DUST_COLORS.length)];
-                this.baseAlpha = Math.random() * 0.4 + 0.2;
+                this.baseAlpha = Math.random() * 0.2 + 0.1; // Reduced base brightness (0.1 - 0.3)
                 this.alpha = this.baseAlpha;
-                this.pulseSpeed = Math.random() * 0.03 + 0.02; // Faster pulse for twinkle
+                this.pulseSpeed = Math.random() * 0.01 + 0.005; // Much slower blinking
                 this.pulseTheta = Math.random() * Math.PI * 2;
-                this.attractTimer = 0; // Track attraction duration
+                this.attractTimer = 0; 
+                this.canBounce = Math.random() < 0.75;
             }
 
-            update(mouse) {
+            update(mouse, targets) {
                 // 1. Float
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Wrap around screen
-                if (this.x < 0) this.x = width;
-                if (this.x > width) this.x = 0;
-                if (this.y < 0) this.y = height;
-                if (this.y > height) this.y = 0;
+                // Boundary handling: 50% bounce, 50% wrap
+                if (this.canBounce) {
+                    if (this.x < this.size || this.x > width - this.size) {
+                        this.vx = -this.vx;
+                        this.x = Math.max(this.size, Math.min(this.x, width - this.size));
+                    }
+                    if (this.y < this.size || this.y > height - this.size) {
+                        this.vy = -this.vy;
+                        this.y = Math.max(this.size, Math.min(this.y, height - this.size));
+                    }
+                } else {
+                    // Wrap around screen (wait until fully off-screen)
+                    if (this.x < -this.size) this.x = width + this.size;
+                    if (this.x > width + this.size) this.x = -this.size;
+                    if (this.y < -this.size) this.y = height + this.size;
+                    if (this.y > height + this.size) this.y = -this.size;
+                }
 
                 // 2. Pulse Glow (Twinkle)
                 this.pulseTheta += this.pulseSpeed;
-                this.alpha = this.baseAlpha + Math.sin(this.pulseTheta) * 0.15;
+                this.alpha = this.baseAlpha + Math.sin(this.pulseTheta) * 0.05; // Reduced pulse amplitude
 
-                // 3. Section Attraction (Border + Timeout)
-                const capsule = document.querySelector('.liquid-glass-capsule');
-                if (capsule) {
-                    const rect = capsule.getBoundingClientRect();
-                    
-                    // Find nearest point on the rectangle (border/surface)
-                    const nearestX = Math.max(rect.left, Math.min(this.x, rect.right));
-                    const nearestY = Math.max(rect.top, Math.min(this.y, rect.bottom));
-                    
-                    let dx = nearestX - this.x;
-                    let dy = nearestY - this.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Attraction range
-                    const attractRange = 120; // Reduced from 200
-                    
-                    if (dist < attractRange) {
-                        // Increment timer (assuming ~60fps, 1/60 per frame)
-                        this.attractTimer += 0.016;
+                // 3. Mouse Repulsion
+                let dxMouse = mouse.x - this.x;
+                let dyMouse = mouse.y - this.y;
+                let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+                const repulsionDist = 150; // Reduced interaction radius
 
-                        // Only attract if under 5 seconds limit
-                        if (this.attractTimer < 5.0) {
-                            // Don't trap completely: if very close (inside or touching), stop pulling
-                            if (dist > 5) { 
-                                const force = (attractRange - dist) / attractRange;
-                                // Gentle pull towards nearest border point
-                                this.vx += (dx / dist) * force * 0.01; // Reduced from 0.03
-                                this.vy += (dy / dist) * force * 0.01;
-                            }
-                        }
-                    } else {
-                        // Reset timer if particle leaves the area
-                        this.attractTimer = 0;
-                    }
+                if (distMouse < repulsionDist) {
+                    const force = (repulsionDist - distMouse) / repulsionDist;
+                    // Reduced repulsion strength
+                    this.vx -= (dxMouse / distMouse) * force * 0.2;
+                    this.vy -= (dyMouse / distMouse) * force * 0.2;
                 }
 
-                // 4. Random Wandering (Brownian-like)
-                this.vx += (Math.random() - 0.5) * 0.01;
-                this.vy += (Math.random() - 0.5) * 0.01;
+                // 4. Attraction to UI Elements
+                if (targets && targets.length > 0) {
+                    targets.forEach(rect => {
+                        const nearestX = Math.max(rect.left, Math.min(this.x, rect.right));
+                        const nearestY = Math.max(rect.top, Math.min(this.y, rect.bottom));
+                        
+                        let dx = nearestX - this.x;
+                        let dy = nearestY - this.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        const attractRange = 180;
+                        
+                        if (dist < attractRange) {
+                            this.attractTimer += 0.016;
+
+                            if (this.attractTimer < 5.0) {
+                                if (dist > 5) { 
+                                    const force = (attractRange - dist) / attractRange;
+                                    // Gentle pull towards nearest border point
+                                    this.vx += (dx / dist) * force * 0.015;
+                                    this.vy += (dy / dist) * force * 0.015;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 5. Random Wandering (Brownian-like)
+                this.vx += (Math.random() - 0.5) * 0.002;
+                this.vy += (Math.random() - 0.5) * 0.002;
 
                 // Dampen speed
-                const maxSpeed = 0.8; 
+                const maxSpeed = 0.2 * (5 / this.size); // Adjusted max speed scaling 
                 const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
                 if (speed > maxSpeed) {
                     this.vx = (this.vx / speed) * maxSpeed;
@@ -204,8 +258,8 @@ const NeuralBackground = () => {
                 blobs.push(new Blob());
             }
 
-            // Increased Dust Particles
-            const dustCount = Math.floor((width * height) / 4000); // Higher density (was 6000)
+            // Increased Dust Particles Count
+            const dustCount = Math.floor((width * height) / 6000); // Increased density
             for (let i = 0; i < dustCount; i++) {
                 dustParticles.push(new Dust());
             }
@@ -229,14 +283,73 @@ const NeuralBackground = () => {
                 blob.draw();
             });
 
+            // Cache attraction targets once per frame
+            const attractionTargets = Array.from(document.querySelectorAll('.liquid-glass-capsule, .nav-buttons-container'))
+                .map(el => el.getBoundingClientRect());
+
             // Draw Dust (Sharp, glowing, on top)
             ctx.globalCompositeOperation = 'source-over'; // Or 'lighter' for more intense glow
             dustParticles.forEach(p => {
-                p.update(mouseRef.current);
+                p.update(mouseRef.current, attractionTargets);
                 p.draw();
             });
 
+            handleCollisions();
+
             requestAnimationFrame(animate);
+        };
+
+        const handleCollisions = () => {
+            for (let i = 0; i < dustParticles.length; i++) {
+                for (let j = i + 1; j < dustParticles.length; j++) {
+                    const p1 = dustParticles[i];
+                    const p2 = dustParticles[j];
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = p1.size + p2.size;
+
+                    if (dist < minDist) {
+                        // 1. Resolve Overlap (prevent sticking)
+                        const angle = Math.atan2(dy, dx);
+                        const overlap = minDist - dist;
+                        const moveX = Math.cos(angle) * overlap * 0.5;
+                        const moveY = Math.sin(angle) * overlap * 0.5;
+                        
+                        p1.x -= moveX;
+                        p1.y -= moveY;
+                        p2.x += moveX;
+                        p2.y += moveY;
+
+                        // 2. Elastic Collision Response
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        
+                        const dvx = p2.vx - p1.vx;
+                        const dvy = p2.vy - p1.vy;
+                        
+                        const velAlongNormal = dvx * nx + dvy * ny;
+
+                        if (velAlongNormal > 0) continue; // Already separating
+
+                        const restitution = 0.9; // Bounciness
+                        // Mass proportional to area (size squared)
+                        const m1 = p1.size * p1.size;
+                        const m2 = p2.size * p2.size;
+
+                        let jVal = -(1 + restitution) * velAlongNormal;
+                        jVal /= (1 / m1 + 1 / m2);
+
+                        const impulseX = jVal * nx;
+                        const impulseY = jVal * ny;
+
+                        p1.vx -= impulseX / m1;
+                        p1.vy -= impulseY / m1;
+                        p2.vx += impulseX / m2;
+                        p2.vy += impulseY / m2;
+                    }
+                }
+            }
         };
 
         resize();
