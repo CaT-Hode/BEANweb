@@ -30,6 +30,96 @@ const pages = [
         visualComp: IntroChart
     },
     {
+        id: 'memory-wall',
+        title: "The Memory Wall",
+        subtitle: "Compute vs. Data Movement",
+        content: (
+            <div className="space-y-6">
+                <div className="text-gray-300">
+                    <p className="mb-4">
+                        While GPU compute power (FLOPS) has grown exponentially (~1000x in 10 years), memory bandwidth has only improved linearly (~100x).
+                    </p>
+                    <p className="mb-4">
+                        This creates a <span className="text-red-400 font-bold">bottleneck</span>: Powerful processors spend significant time <span className="text-white italic">waiting for data</span>.
+                    </p>
+                    <div className="p-4 bg-white/5 rounded-lg border-l-4 border-red-500">
+                        <div className="text-sm text-gray-400">
+                            "Data movement consumes <strong className="text-white">orders of magnitude</strong> more energy than arithmetic operations."
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ),
+        visualComp: BackgroundMemoryWall
+    },
+    {
+        id: 'strategies',
+        title: "Optimization Strategies",
+        subtitle: "Solving the Efficiency Puzzle",
+        content: (
+            <div className="space-y-6">
+                <div className="text-gray-300">
+                    To bridge the gap, we employ three primary strategies to reduce model size and computational cost:
+                </div>
+                <ul className="space-y-4">
+                    <li className="flex gap-4">
+                        <div className="mt-1 text-yellow-400"><Icons.Scissors size={20} /></div>
+                        <div>
+                            <strong className="text-white block">Pruning</strong>
+                            <span className="text-sm text-gray-400">Removing unimportant neurons or connections to create sparse networks.</span>
+                        </div>
+                    </li>
+                    <li className="flex gap-4">
+                        <div className="mt-1 text-purple-400"><Icons.Users size={20} /></div>
+                        <div>
+                            <strong className="text-white block">Distillation</strong>
+                            <span className="text-sm text-gray-400">Training a compact "student" model to mimic a massive "teacher" model.</span>
+                        </div>
+                    </li>
+                    <li className="flex gap-4">
+                        <div className="mt-1 text-green-400"><Icons.Minimize2 size={20} /></div>
+                        <div>
+                            <strong className="text-white block">Quantization</strong>
+                            <span className="text-sm text-gray-400">Representing weights and activations with fewer bits (e.g., 32-bit float → 8-bit integer).</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        ),
+        visualComp: BackgroundStrategies
+    },
+    {
+        id: 'quantization',
+        title: "The Power of Quantization",
+        subtitle: "From FP32 to Binary",
+        content: (
+            <div className="space-y-6">
+                <div className="text-gray-300">
+                    <p className="mb-4">
+                        Quantization is the most effective way to reduce memory footprint and increase bandwidth utilization.
+                    </p>
+                    <p className="mb-4">
+                        By moving from <span className="text-sky-400 font-mono">FP32</span> to <span className="text-green-400 font-mono">INT8</span>, we achieve <strong>4x</strong> compression.
+                    </p>
+                    <p>
+                        <span className="text-white font-bold">Binary Neural Networks (BNNs)</span> take this to the extreme: using just <strong>1-bit</strong> values (-1, +1).
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div className="bg-gray-800/50 p-3 rounded border border-white/10 text-center">
+                        <div className="text-xs text-gray-500 uppercase">FP32 Bandwidth</div>
+                        <div className="text-lg font-mono text-white">1x</div>
+                    </div>
+                    <div className="bg-green-900/20 p-3 rounded border border-green-500/30 text-center">
+                        <div className="text-xs text-green-400 uppercase">Binary Bandwidth</div>
+                        <div className="text-lg font-mono text-green-400">32x</div>
+                    </div>
+                </div>
+            </div>
+        ),
+        visualComp: BackgroundQuantization
+    },
+    {
         id: 'adabin',
         title: "Evolution of Binarization",
         subtitle: "From Standard to Optimized",
