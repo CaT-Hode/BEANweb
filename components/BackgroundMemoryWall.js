@@ -533,7 +533,7 @@ const BackgroundMemoryWall = ({ isActive }) => {
                         <div className="flex flex-col items-center">
                             <span className="text-[10px] text-gray-400 mb-0.5 tracking-widest font-bold">COMPUTE</span>
                             <span className="text-white font-mono text-base font-bold">
-                                {(1000/(precision === 'FP32' ? currentGpu.rate : currentGpu.rateFP16)).toFixed(1)}x
+                                {(1000/(precision === 'FP32' ? currentGpu.rate : currentGpu.rateFP16)).toFixed(2)}x
                             </span>
                         </div>
                     </div>
