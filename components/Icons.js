@@ -1,8 +1,8 @@
 const Icons = {
-  Layers: (props) => (
+  Layers: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -14,10 +14,10 @@ const Icons = {
       <polyline points="2 12 12 17 22 12" />
     </svg>
   ),
-  Cpu: (props) => (
+  Cpu: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -36,10 +36,10 @@ const Icons = {
       <line x1="1" y1="14" x2="4" y2="14" />
     </svg>
   ),
-  Zap: (props) => (
+  Zap: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -49,10 +49,10 @@ const Icons = {
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
   ),
-  ArrowRight: (props) => (
+  ArrowRight: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -63,10 +63,10 @@ const Icons = {
       <polyline points="12 5 19 12 12 19" />
     </svg>
   ),
-  ArrowLeft: (props) => (
+  ArrowLeft: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -77,10 +77,10 @@ const Icons = {
       <polyline points="12 19 5 12 12 5" />
     </svg>
   ),
-  Info: (props) => (
+  Info: ({ size = 16, ...props }) => (
     <svg
-      width="16"
-      height="16"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -92,10 +92,10 @@ const Icons = {
       <line x1="12" y1="8" x2="12.01" y2="8" />
     </svg>
   ),
-  Refresh: (props) => (
+  Refresh: ({ size = 16, ...props }) => (
     <svg
-      width="16"
-      height="16"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -107,10 +107,10 @@ const Icons = {
       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
   ),
-  ZoomIn: (props) => (
+  ZoomIn: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -123,10 +123,10 @@ const Icons = {
       <line x1="8" y1="11" x2="14" y2="11" />
     </svg>
   ),
-  CornerUpLeft: (props) => (
+  CornerUpLeft: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -137,10 +137,10 @@ const Icons = {
       <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
     </svg>
   ),
-  BarChart: (props) => (
+  BarChart: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -152,10 +152,10 @@ const Icons = {
       <line x1="6" y1="20" x2="6" y2="14" />
     </svg>
   ),
-  TrendingUp: (props) => (
+  TrendingUp: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -166,10 +166,10 @@ const Icons = {
       <polyline points="17 6 23 6 23 12" />
     </svg>
   ),
-  ChevronDown: (props) => (
+  ChevronDown: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -179,10 +179,10 @@ const Icons = {
       <polyline points="6 9 12 15 18 9" />
     </svg>
   ),
-  ChevronRight: (props) => (
+  ChevronRight: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -192,10 +192,10 @@ const Icons = {
       <polyline points="9 18 15 12 9 6" />
     </svg>
   ),
-  ArrowDown: (props) => (
+  ArrowDown: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -206,10 +206,10 @@ const Icons = {
       <polyline points="19 12 12 19 5 12" />
     </svg>
   ),
-  Plus: (props) => (
+  Plus: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -220,10 +220,10 @@ const Icons = {
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   ),
-  X: (props) => (
+  X: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -234,10 +234,10 @@ const Icons = {
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
-  AlertTriangle: (props) => (
+  AlertTriangle: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -249,10 +249,10 @@ const Icons = {
       <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   ),
-  Minimize2: (props) => (
+  Minimize2: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -265,10 +265,10 @@ const Icons = {
       <line x1="3" y1="21" x2="10" y2="14" />
     </svg>
   ),
-  Scissors: (props) => (
+  Scissors: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -282,10 +282,10 @@ const Icons = {
       <line x1="8.12" y1="8.12" x2="12" y2="12" />
     </svg>
   ),
-  Users: (props) => (
+  Users: ({ size = 20, ...props }) => (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

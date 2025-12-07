@@ -241,6 +241,16 @@ const pages = [
             </div>
         ),
         visualComp: ExperimentsRevamped
+    },
+    {
+        id: 'highlights',
+        title: "", // Empty title to let the component handle it
+        subtitle: "",
+        content: (
+            // Empty content as the visual component takes over
+            <div className="hidden"></div>
+        ),
+        visualComp: BEANetHighlights
     }
 ];
 
@@ -359,11 +369,20 @@ const App = () => {
 
     const go = (i) => {
         if (i >= 0 && i < pages.length && !anim) {
-            setAnim(true); setTimeout(() => { setCurr(i); setAnim(false); }, 500);
+            const leavingHighlights = pages[curr].id === 'highlights';
+            setAnim(true);
+            
+            if (leavingHighlights) {
+                // Wait for Highlights fly-out animation to complete before switching
+                setTimeout(() => { setCurr(i); setAnim(false); }, 2000);
+            } else {
+                setTimeout(() => { setCurr(i); setAnim(false); }, 500);
+            }
         }
     };
 
     const Visual = pages[curr].visualComp;
+    const isHighlights = pages[curr].id === 'highlights';
 
     // Conditional Style for Global Scaling
     const containerStyle = scale === 1 ? {
@@ -384,28 +403,24 @@ const App = () => {
                 <div className={`w-full relative select-none text-[#e0e0e0] font-['Inter'] transition-all duration-500 ${isLandscape ? 'min-h-full flex flex-col' : 'min-h-full flex flex-col'}`}>
 
                     {/* Header */}
-                    <div className={`flex z-20 shrink-0 transition-all duration-500 ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'}`}>
+                    <div className={`flex z-20 shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'} ${isHighlights && isLandscape ? '!h-0 !p-0 !opacity-0 -translate-y-full overflow-hidden' : 'translate-y-0 opacity-100'}`}>
                         <div className="font-black tracking-widest text-sky-500 text-3xl magnetic-target cursor-pointer" onClick={() => go(0)}>BEANet</div>
                         <div
-                            className={`flex items-center transition-all duration-300 magnetic-target ${isLandscape ? 'mr-4' : ''}`}
+                            className={`flex items-center justify-center transition-all duration-300 magnetic-target ${isLandscape ? 'mr-4' : 'w-full px-4'}`}
                             data-magnetic-strength="0.1"
                             onMouseLeave={() => setNavHover(null)}
-                            style={!isLandscape ? {
-                                transform: `scale(${Math.min(1, (window.innerWidth - 32) / 350)})`,
-                                transformOrigin: 'center top'
-                            } : {}}
                         >
                             {pages.map((_, i) => (
                                 <button
                                     key={i}
                                     onClick={() => go(i)}
                                     onMouseEnter={() => setNavHover(i)}
-                                    className="relative py-6 px-4 group focus:outline-none"
+                                    className={`relative group focus:outline-none ${isLandscape ? 'py-6 px-4' : 'py-4 px-1 flex-1'}`}
                                 >
                                     <div
                                         className={`h-1.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${(navHover !== null ? navHover === i : curr === i)
-                                            ? 'w-24 bg-sky-500 shadow-[0_0_15px_#38bdf8]'
-                                            : 'w-8 bg-gray-700 group-hover:bg-gray-500'
+                                            ? (isLandscape ? 'w-24' : 'w-full') + ' bg-sky-500 shadow-[0_0_15px_#38bdf8]'
+                                            : (isLandscape ? 'w-8' : 'w-full opacity-50') + ' bg-gray-700 group-hover:bg-gray-500'
                                             }`}
                                     />
                                 </button>
@@ -414,22 +429,24 @@ const App = () => {
                     </div>
 
                     {/* Main Content - Responsive Layout Switch */}
-                    <div className={`flex-1 relative z-10 transition-all duration-500 ${isLandscape ? 'px-8 flex flex-row items-start' : 'px-0 flex flex-col pb-24'}`}>
+                    <div className={`flex-1 relative z-10 transition-all duration-500 ${isLandscape ? 'px-8 flex flex-row items-start' : 'px-0 flex flex-col pb-24'} ${isHighlights && !isLandscape ? '!pb-0' : ''}`}>
 
                         {/* Text Section */}
                         <div
-                            className={`transition-all duration-500 ${isLandscape ? 'pr-12 h-full flex flex-col justify-start pt-12 pointer-events-none' : 'w-full mb-8 mt-4 px-8'}`}
-                            style={isLandscape ? { width: `${textWidth}%`, transform: `scale(${textScale})`, transformOrigin: 'top left' } : {}}
+                            className={`transition-all duration-500 ${isLandscape ? 'pr-12 h-full flex flex-col justify-start pt-12 pointer-events-none' : 'w-full mb-8 mt-4 px-8'} ${isHighlights ? '!w-0 !p-0 !m-0 opacity-0 overflow-hidden' : ''}`}
+                            style={isLandscape && !isHighlights ? { width: `${textWidth}%`, transform: `scale(${textScale})`, transformOrigin: 'top left' } : {}}
                         >
                             <div className={`transition-all duration-700 transform ${anim ? 'opacity-0 -translate-y-8' : 'opacity-100 translate-y-0'}`}>
-                                <LiquidGlass 
-                                    className="liquid-glass-capsule mb-6 !py-0 !px-4" 
-                                    overlayStyle={{ background: 'rgba(14, 165, 233, 0.1)' }}
-                                >
-                                    <div className="flex items-center justify-center gap-3">
-                                        <span className="text-sky-300 text-4xl font-light tracking-wide font-tall leading-none pb-1">SECTION 0{curr + 1}</span>
-                                    </div>
-                                </LiquidGlass>
+                                {!isHighlights && (
+                                    <LiquidGlass 
+                                        className="liquid-glass-capsule mb-6 !py-0 !px-4" 
+                                        overlayStyle={{ background: 'rgba(14, 165, 233, 0.1)' }}
+                                    >
+                                        <div className="flex items-center justify-center gap-3">
+                                            <span className="text-sky-300 text-4xl font-light tracking-wide font-tall leading-none pb-1">SECTION 0{curr + 1}</span>
+                                        </div>
+                                    </LiquidGlass>
+                                )}
                                 <h1 className={`${isLandscape ? 'text-4xl' : 'text-2xl'} font-black text-white mb-4 leading-tight`}>{pages[curr].title}</h1>
                                 <h2 className="text-lg font-light text-gray-400 mb-6 font-mono">{pages[curr].subtitle}</h2>
                                 <div className="pointer-events-auto leading-relaxed opacity-90">{pages[curr].content}</div>
@@ -437,19 +454,19 @@ const App = () => {
                         </div>
 
                         {/* Visual Section */}
-                        <div className={`relative flex transition-all duration-500 ${isLandscape ? 'justify-end items-start flex-1 pl-4 h-full pt-0' : 'justify-center items-center w-full min-h-[50vh]'}`}>
-                            <div className={`w-full shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex flex-col border border-white/10 flex-shrink-0
-                                    rounded-3xl p-1
-                                    ${anim ? 'opacity-0 scale-95 translate-x-20' : 'opacity-100 scale-100 translate-x-0'}
+                        <div className={`relative flex transition-all duration-500 ${isLandscape ? 'justify-end items-start flex-1 pl-4 h-full pt-0' : 'justify-center items-center w-full min-h-[50vh]'} ${isHighlights ? '!pl-0 !justify-center' : ''}`}>
+                            <div className={`w-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex flex-col flex-shrink-0
+                                    ${!isHighlights ? 'shadow-2xl border border-white/10 rounded-3xl p-1' : 'border-none shadow-none bg-transparent'}
+                                    ${anim && !isHighlights ? 'opacity-0 scale-95 translate-x-20' : 'opacity-100 scale-100 translate-x-0'}
                                     ${curr === 0 ? 'aspect-[4/3] min-h-[600px]' : 'min-h-[50vh]'}
                                 `}
                                 style={{
-                                    backdropFilter: 'blur(8px)',
-                                    WebkitBackdropFilter: 'blur(8px)',
-                                    backgroundColor: curr === 0 ? 'rgba(20, 20, 30, 0.6)' : 'rgba(20, 20, 30, 0.35)',
-                                    transform: isLandscape ? `scale(${visualScale})` : `scale(${mobileScale})`,
-                                    transformOrigin: isLandscape ? 'top right' : 'top center',
-                                    width: isLandscape ? '907px' : (mobileScale < 1 ? `${MOBILE_TARGET_WIDTH}px` : '100%')
+                                    backdropFilter: isHighlights ? 'none' : 'blur(8px)',
+                                    WebkitBackdropFilter: isHighlights ? 'none' : 'blur(8px)',
+                                    backgroundColor: isHighlights ? 'transparent' : (curr === 0 ? 'rgba(20, 20, 30, 0.6)' : 'rgba(20, 20, 30, 0.35)'),
+                                    transform: isLandscape ? (isHighlights ? 'scale(1)' : `scale(${visualScale})`) : `scale(${mobileScale})`,
+                                    transformOrigin: isLandscape ? (isHighlights ? 'center' : 'top right') : 'top center',
+                                    width: (isHighlights && !isLandscape) ? `${MOBILE_TARGET_WIDTH}px` : (isHighlights ? '100%' : (isLandscape ? '907px' : (mobileScale < 1 ? `${MOBILE_TARGET_WIDTH}px` : '100%')))
                                 }}
                             >
                                 <div className={`w-full flex-1 relative flex flex-col rounded-2xl`}>

@@ -22,7 +22,7 @@ const BackgroundQuantization = ({ isActive }) => {
         // Using setTimeout with [step] dependency ensures it resets whenever step changes (auto or manual)
         const timer = setTimeout(() => {
             setStep(s => (s + 1) % formats.length);
-        }, 8000); 
+        }, 12000);  
         return () => clearTimeout(timer);
     }, [isActive, step]);
 
@@ -488,29 +488,47 @@ const BackgroundQuantization = ({ isActive }) => {
                             from { height: 100%; }
                             to { height: 0%; }
                         }
+                        @keyframes glowPulse {
+                            0% { filter: hue-rotate(0deg) brightness(1.1); box-shadow: 0 0 2px rgba(139, 92, 246, 0.4); opacity: 0.6; }
+                            50% { filter: hue-rotate(20deg) brightness(1.3) contrast(1.2); box-shadow: 0 0 6px rgba(236, 72, 153, 0.8), 0 0 8px rgba(139, 92, 246, 0.4); opacity: 0.9; }
+                            100% { filter: hue-rotate(0deg) brightness(1.1); box-shadow: 0 0 2px rgba(139, 92, 246, 0.4); opacity: 0.6; }
+                        }
                     `}</style>
                     {formats.map((f, i) => (
                         <React.Fragment key={f.name}>
                             <div 
                                 onClick={() => setStep(i)}
-                                className={`cursor-pointer transition-all duration-300 flex flex-col items-center gap-2 group z-10 flex-none magnetic-target ${i === step ? 'scale-110 opacity-100' : 'opacity-30 hover:opacity-100 scale-90'}`}
+                                className={`cursor-pointer transition-all duration-300 flex flex-col items-center gap-2 group z-10 flex-none magnetic-target relative ${i === step ? 'scale-110 opacity-100' : 'opacity-30 hover:opacity-100 scale-90'}`}
                                 data-magnetic-strength="0.2"
                             >
-                                <div className={`w-2 h-8 rounded-full relative overflow-hidden bg-gray-700`}>
+                                {/* Dazzling Outer Bloom Layer - Made Ultra Thin */}
+                                {i === step && (
+                                    <div 
+                                        className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-10 rounded-full blur-[2px] pointer-events-none"
+                                        style={{ 
+                                            background: 'linear-gradient(to top, #3b82f6, #8b5cf6, #ec4899)',
+                                            animation: 'glowPulse 3s infinite alternate',
+                                            opacity: 0.5 
+                                        }}
+                                    />
+                                )}
+
+                                <div className={`w-4 h-10 rounded-full relative overflow-hidden bg-gray-700 z-10`}>
                                     {/* Static base for inactive or background */}
                                     
                                     {/* Active Progress Overlay */}
                                     {i === step && (
                                         <div 
-                                            className="absolute bottom-0 left-0 w-full bg-green-400 shadow-[0_0_10px_#4ade80]"
+                                            className="absolute bottom-0 left-0 w-full"
                                             style={{ 
+                                                background: 'linear-gradient(to top, #3b82f6, #8b5cf6, #ec4899)',
                                                 // Animation Sequence:
                                                 // 1. Fill Up (0.5s) - Entrance
-                                                // 2. Deplete (7.5s) - Timer (starts after 0.5s)
-                                                // Total roughly 8s.
+                                                // 2. Deplete (11.5s) - Timer (starts after 0.5s)
+                                                // (Removed glowPulse from inner element to prevent "thick border" artifact/clipping issues)
                                                 animation: isActive 
-                                                    ? 'fillUp 0.5s ease-out forwards, deplete 7.5s linear 0.5s forwards' 
-                                                    : 'fillUp 0.5s ease-out forwards' // If paused/static, just fill and stay? Adjust if needed. 
+                                                    ? 'fillUp 0.5s ease-out forwards, deplete 11.5s linear 0.5s forwards' 
+                                                    : 'fillUp 0.5s ease-out forwards' 
                                             }}
                                         />
                                     )}
