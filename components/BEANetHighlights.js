@@ -23,7 +23,7 @@ const BEANetHighlights = ({ isActive }) => {
             
             if (landscape) {
                 // Calculate available height (viewport height minus padding)
-                const availableHeight = window.innerHeight - 64; // 32px padding top + bottom
+                const availableHeight = window.innerHeight - 100; // Increased padding for footer visibility
                 const availableWidth = window.innerWidth - 64;
                 
                 // Calculate grid dimensions based on 16/11 aspect ratio
@@ -309,48 +309,51 @@ const BEANetHighlights = ({ isActive }) => {
                 <div className="relative flex flex-col items-center justify-center h-full text-center p-2 overflow-hidden">
                     <style>{`
                         @keyframes electricFlow {
-                            0% { -webkit-mask-position: -200% 0; mask-position: -200% 0; }
-                            100% { -webkit-mask-position: 300% 0; mask-position: 300% 0; }
+                            0% { -webkit-mask-position: 250% 0; mask-position: 250% 0; }
+                            100% { -webkit-mask-position: -150% 0; mask-position: -150% 0; }
                         }
                         @keyframes dataFlow {
-                            0% { -webkit-mask-position: 0% -150%; mask-position: 0% -150%; }
-                            100% { -webkit-mask-position: 0% 250%; mask-position: 0% 250%; }
+                            0% { -webkit-mask-position: 0% 250%; mask-position: 0% 250%; }
+                            100% { -webkit-mask-position: 0% -150%; mask-position: 0% -150%; }
                         }
                     `}</style>
 
                     {/* Background Layer: Symmetrical Icons with Flowing Light */}
-                    {/* Background Layer: Symmetrical Icons with Flowing Light */}
-                    <div className="absolute inset-0 flex flex-row justify-center items-center gap-0 pointer-events-none select-none overflow-visible">
+                    <div className="absolute inset-0 flex flex-row justify-center items-center gap-16 pointer-events-none select-none overflow-visible">
                         
                         {/* Lightning - Left - Electric Flow */}
-                        <div className="relative transform -translate-x-[20%]">
+                        <div className="relative transform translate-x-0 shrink-0">
                              {/* Base Layer */}
-                             <Icons.Zap size={480} className="text-sky-800/10" strokeWidth={0.5} />
+                             <Icons.Zap width={60} height={60} className="text-sky-900/10" strokeWidth={1.5} />
                              {/* Highlight/Flow Layer - Expanded to prevent clip */}
-                             <div className="absolute -inset-32 text-sky-300 flex items-center justify-center" style={{
-                                 maskImage: 'linear-gradient(115deg, transparent 20%, black 50%, transparent 80%)',
-                                 WebkitMaskImage: 'linear-gradient(115deg, transparent 20%, black 50%, transparent 80%)',
+                             <div className="absolute -inset-8 text-sky-400 flex items-center justify-center" style={{
+                                 maskImage: 'linear-gradient(115deg, transparent 35%, black 50%, transparent 65%)',
+                                 WebkitMaskImage: 'linear-gradient(115deg, transparent 35%, black 50%, transparent 65%)',
                                  maskSize: '200% 100%',
                                  WebkitMaskSize: '200% 100%',
-                                 animation: 'electricFlow 7s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                                 maskRepeat: 'no-repeat',
+                                 WebkitMaskRepeat: 'no-repeat',
+                                 animation: 'electricFlow 8s linear infinite'
                              }}>
-                                 <Icons.Zap size={480} strokeWidth={1} className="drop-shadow-[0_0_40px_rgba(56,189,248,0.6)]" />
+                                 <Icons.Zap width={60} height={60} strokeWidth={2} className="drop-shadow-[0_0_15px_rgba(56,189,248,0.5)]" />
                              </div>
                         </div>
 
                         {/* Chip - Right - Data Scan */}
-                        <div className="relative transform translate-x-[20%]">
+                        <div className="relative transform translate-x-0 shrink-0">
                              {/* Base Layer */}
-                             <Icons.Cpu size={480} className="text-purple-800/10" strokeWidth={0.5} />
+                             <Icons.Cpu width={60} height={60} className="text-purple-900/10" strokeWidth={1.5} />
                              {/* Highlight/Flow Layer - Expanded to prevent clip */}
-                             <div className="absolute -inset-32 text-purple-300 flex items-center justify-center" style={{
-                                 maskImage: 'linear-gradient(180deg, transparent 20%, black 50%, transparent 80%)',
-                                 WebkitMaskImage: 'linear-gradient(180deg, transparent 20%, black 50%, transparent 80%)',
+                             <div className="absolute -inset-8 text-purple-400 flex items-center justify-center" style={{
+                                 maskImage: 'linear-gradient(180deg, transparent 35%, black 50%, transparent 65%)',
+                                 WebkitMaskImage: 'linear-gradient(180deg, transparent 35%, black 50%, transparent 65%)',
                                  maskSize: '100% 200%',
                                  WebkitMaskSize: '100% 200%',
-                                 animation: 'dataFlow 12s linear infinite'
+                                 maskRepeat: 'no-repeat',
+                                 WebkitMaskRepeat: 'no-repeat',
+                                 animation: 'dataFlow 10s linear infinite'
                              }}>
-                                 <Icons.Cpu size={480} strokeWidth={1} className="drop-shadow-[0_0_40px_rgba(168,85,247,0.6)]" />
+                                 <Icons.Cpu width={60} height={60} strokeWidth={2} className="drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
                              </div>
                         </div>
                     </div>
@@ -379,13 +382,13 @@ const BEANetHighlights = ({ isActive }) => {
                     <svg className="absolute inset-0 w-full h-full opacity-70" viewBox="0 0 200 60" preserveAspectRatio="none">
                         <defs>
                             {/* Clip path for left side (red) - animated */}
-                            <clipPath id="leftClip">
+                            <clipPath id="adabinLeftClip">
                                 <rect x="0" y="0" width="100" height="60">
                                     <animate attributeName="width" values="100;120;100;80;100" dur="40s" repeatCount="indefinite" />
                                 </rect>
                             </clipPath>
                             {/* Clip path for right side (blue) - animated, wider to ensure full coverage */}
-                            <clipPath id="rightClip">
+                            <clipPath id="adabinRightClip">
                                 <rect x="100" y="0" width="200" height="60">
                                     <animate attributeName="x" values="100;120;100;80;100" dur="40s" repeatCount="indefinite" />
                                 </rect>
@@ -393,7 +396,7 @@ const BEANetHighlights = ({ isActive }) => {
                         </defs>
                         
                         {/* Bar positions - RED layer (clipped to left of threshold) */}
-                        <g clipPath="url(#leftClip)">
+                        <g clipPath="url(#adabinLeftClip)">
                             <rect x="15" y="38" width="12" height="22" fill="rgba(244,63,94,0.5)" rx="1" />
                             <rect x="32" y="25" width="12" height="35" fill="rgba(244,63,94,0.55)" rx="1" />
                             <rect x="49" y="12" width="12" height="48" fill="rgba(244,63,94,0.6)" rx="1" />
@@ -407,7 +410,7 @@ const BEANetHighlights = ({ isActive }) => {
                         </g>
                         
                         {/* Bar positions - BLUE layer (clipped to right of threshold) */}
-                        <g clipPath="url(#rightClip)">
+                        <g clipPath="url(#adabinRightClip)">
                             <rect x="15" y="38" width="12" height="22" fill="rgba(56,189,248,0.5)" rx="1" />
                             <rect x="32" y="25" width="12" height="35" fill="rgba(56,189,248,0.55)" rx="1" />
                             <rect x="49" y="12" width="12" height="48" fill="rgba(56,189,248,0.6)" rx="1" />
@@ -441,10 +444,13 @@ const BEANetHighlights = ({ isActive }) => {
             offset: { x: 80, y: 80 },
             bgColor: 'rgba(255,255,255,0.05)',
             content: (
-                <div className="flex flex-col items-center justify-center h-full gap-3">
-                     <div className="text-4xl font-black text-white">4.09</div>
-                     <div className="text-base font-medium text-gray-400 uppercase tracking-widest text-center">MB Model Size</div>
-                     <div className="text-[10px] text-gray-500">BEANet-Nano</div>
+                <div className="flex flex-col items-center justify-center h-full gap-1">
+                     <div className="flex items-baseline gap-1 transform translate-y-2 -translate-x-2">
+                        <span className="text-4xl md:text-5xl font-black text-white">4.09</span>
+                        <span className="text-2xl font-bold text-gray-400">MB</span>
+                     </div>
+                     <div className="text-sm font-medium text-gray-400 uppercase tracking-widest text-center mt-2">Model Size</div>
+                     <div className="text-[12px] text-gray-500">BEANet-Nano</div>
                 </div>
             )
         }
@@ -535,7 +541,7 @@ const BEANetHighlights = ({ isActive }) => {
             
             {/* Disclaimer / Footer */}
             <div 
-                className={`absolute bottom-3 text-[10px] text-gray-600 font-mono tracking-widest transition-all duration-1000 delay-[2000ms] ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                className={`absolute bottom-3 text-[10px] text-gray-600 font-mono tracking-widest transition-all ${mounted ? 'duration-1000 delay-[2000ms] opacity-100 translate-y-0' : 'duration-300 delay-0 opacity-0 translate-y-10'}`}
             >
                 Designed for Efficiency. Built for Performance.
             </div>
