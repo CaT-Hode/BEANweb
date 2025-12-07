@@ -457,6 +457,19 @@ const BEANetHighlights = ({ isActive }) => {
 
     ];
 
+    const animationOrder = {
+        'accuracy': 0,
+        'bw': 1,
+        'sota': 2,
+        'exste': 3,
+        'distill': 4,
+        'mobile': 5,
+        'adabin': 6,
+        'arch': 7,
+        'block': 8,
+        'brand': 9
+    };
+
     return (
         <div className="w-full h-full relative flex items-center justify-center p-8 z-50">
             <div 
@@ -498,7 +511,7 @@ const BEANetHighlights = ({ isActive }) => {
                                 : `translate(${card.offset.x}px, ${card.offset.y}px) scale(1.3)`,
                             opacity: mounted ? 1 : 0,
                             zIndex: card.style?.zIndex || 1,
-                            transitionDelay: `${index * 120}ms`,
+                            transitionDelay: `${(animationOrder[card.id] ?? index) * 80}ms`,
                             background: card.bgGradient 
                                 ? undefined 
                                 : (card.bgColor || 'rgba(255,255,255,0.03)')
