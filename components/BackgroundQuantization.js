@@ -560,8 +560,8 @@ const BackgroundQuantization = ({ isActive }) => {
                         className="relative rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 min-w-[200px]"
                         style={{ 
                             backgroundColor: 'rgba(10, 10, 15, 0.3)', // Darker background
-                            backdropFilter: 'blur(30px)',
-                            WebkitBackdropFilter: 'blur(30px)',
+                            backdropFilter: 'blur(6px)',
+                            WebkitBackdropFilter: 'blur(6px)',
                             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
                         }}
                     >
