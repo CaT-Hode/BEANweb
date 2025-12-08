@@ -9,7 +9,7 @@ const HLatex = ({ children, displayMode = false }) => {
     return <span dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
-const BEANetHighlights = ({ isActive, goToPage }) => {
+const BEANetHighlights = ({ isActive, goToPage, togglePageAudio }) => {
     const [mounted, setMounted] = React.useState(false);
     const [isLandscape, setIsLandscape] = React.useState(false);
     const [gridStyle, setGridStyle] = React.useState({});
@@ -475,7 +475,6 @@ const BEANetHighlights = ({ isActive, goToPage }) => {
         'bw': 3,
         'sota': 7,
         'block': 6,
-        'brand': 0,
         'exste': 5,
         'distill': 2,
         'arch': 6,
@@ -513,12 +512,13 @@ const BEANetHighlights = ({ isActive, goToPage }) => {
                     <div 
                         key={card.id}
                         onClick={() => goToPage && targetPages[card.id] !== undefined && goToPage(targetPages[card.id])}
+                        onDoubleClick={() => card.id === 'brand' && togglePageAudio && togglePageAudio()}
                         className={`
                             ${card.col} ${card.row} relative group
                             rounded-[1.5rem] backdrop-blur border border-white/10 
                             shadow-2xl overflow-hidden
                             transition-all duration-[1800ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                            ${targetPages[card.id] !== undefined ? 'cursor-pointer hover:border-white/30' : ''}
+                            ${(targetPages[card.id] !== undefined || card.id === 'brand') ? 'cursor-pointer hover:border-white/30' : ''}
                         `}
                         style={{
                             transform: mounted 

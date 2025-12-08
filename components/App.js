@@ -593,7 +593,7 @@ const App = () => {
                             >
                                 <div className={`w-full flex-1 relative flex flex-col rounded-2xl`}>
                                     <div className="relative w-full flex-1 flex flex-col"> {/* Removed overflow-hidden to allow expansion */}
-                                        {Visual && <Visual isActive={!anim} goToPage={go} />}
+                                        {Visual && <Visual isActive={!anim} goToPage={go} togglePageAudio={togglePageAudio} />}
                                     </div>
                                 </div>
 
