@@ -99,6 +99,7 @@ const useScale = () => {
 const useAudioController = (curr) => {
     const audioRef = React.useRef(null);
     const transitionTimeoutRef = React.useRef(null);
+    const isSpecialRef = React.useRef(false);
     const [isPlaying, setIsPlaying] = React.useState(false);
 
     // Audio Helpers
@@ -158,6 +159,7 @@ const useAudioController = (curr) => {
     };
 
     const playTrack = (pageIndex, fadeInDuration = 1000) => {
+        isSpecialRef.current = false;
         const trackNum = String(pageIndex + 1).padStart(2, '0');
         const audioPath = `source/${trackNum}.wav`;
         const audio = new Audio(audioPath);
@@ -166,6 +168,29 @@ const useAudioController = (curr) => {
         
         audioRef.current = audio;
         fadeAudioIn(audio, fadeInDuration);
+    };
+
+    const playSpecialTrack = (url) => {
+        isSpecialRef.current = true;
+        
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+        }
+        if (audioRef.current) {
+            fadeAudioOut(audioRef.current, 500);
+        }
+
+        const audio = new Audio(url);
+        audio.dataset.isSpecial = "true";
+        audio.onended = () => {
+            setIsPlaying(false);
+            isSpecialRef.current = false;
+        };
+        
+        audioRef.current = audio;
+        setIsPlaying(true);
+        // Special track starts immediately after fade out of previous (or overlap)
+        setTimeout(() => fadeAudioIn(audio, 1000), 500); 
     };
 
     // Audio Playback Handler
@@ -184,19 +209,25 @@ const useAudioController = (curr) => {
             setIsPlaying(true);
             
             // Check if we can resume current track
-            if (audioRef.current && audioRef.current.dataset.pageIndex == curr) {
-                if (audioRef.current.paused || audioRef.current.volume < 1) {
-                   fadeAudioIn(audioRef.current, 500);
-                } else {
-                   audioRef.current.play().catch(e => console.error(e));
+            if (audioRef.current) {
+                const isCorrectPage = audioRef.current.dataset.pageIndex == curr;
+                const isSpecial = isSpecialRef.current;
+                
+                if (isSpecial || isCorrectPage) {
+                    if (audioRef.current.paused || audioRef.current.volume < 1) {
+                        fadeAudioIn(audioRef.current, 500);
+                    } else {
+                        audioRef.current.play().catch(e => console.error(e));
+                    }
+                    return;
                 }
-            } else {
-                // New track needed
-                if (audioRef.current) {
-                    fadeAudioOut(audioRef.current, 500);
-                }
-                playTrack(curr, 1000);
             }
+            
+            // New track needed
+            if (audioRef.current) {
+                fadeAudioOut(audioRef.current, 500);
+            }
+            playTrack(curr, 1000);
         }
     };
 
@@ -204,6 +235,11 @@ const useAudioController = (curr) => {
     React.useEffect(() => {
         if (transitionTimeoutRef.current) {
             clearTimeout(transitionTimeoutRef.current);
+        }
+
+        // If Special Audio is playing, ignore page switch
+        if (isSpecialRef.current && isPlaying) {
+            return;
         }
 
         if (isPlaying) {
@@ -243,5 +279,17 @@ const useAudioController = (curr) => {
         };
     }, [curr]); // Trigger on page change
 
-    return { isPlaying, togglePageAudio };
+    // Preload Audio
+    React.useEffect(() => {
+        const preload = (url) => {
+            const audio = new Audio();
+            audio.src = url;
+            audio.load();
+        };
+        ['01','02','03','04','05','06','07','08','09','EX'].forEach(id => {
+            preload(`source/${id}.wav`);
+        });
+    }, []);
+
+    return { isPlaying, togglePageAudio, playSpecialTrack };
 };

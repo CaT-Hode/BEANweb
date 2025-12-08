@@ -1,13 +1,56 @@
 
 
 
-const BEANetHighlights = ({ isActive, goToPage, togglePageAudio }) => {
+const BEANetHighlights = ({ isActive, goToPage, togglePageAudio, playSpecialTrack, isPlaying }) => {
     const [mounted, setMounted] = React.useState(false);
     const [isLandscape, setIsLandscape] = React.useState(false);
     const [gridStyle, setGridStyle] = React.useState({});
     const cardsContainerRef = React.useRef(null);
     const animationFrameRef = React.useRef(null);
     const lastTapRef = React.useRef(0);
+
+    // Click Logic State
+    const isPlayingRef = React.useRef(isPlaying);
+    React.useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+    const secretClicksRef = React.useRef(0);
+    const secretClickTimerRef = React.useRef(null);
+    const wasPlayingAtStartRef = React.useRef(false);
+
+    const handleSecretClick = () => {
+        const clicks = secretClicksRef.current + 1;
+        secretClicksRef.current = clicks;
+
+        // Start timer on FIRST click only
+        if (clicks === 1) {
+            wasPlayingAtStartRef.current = isPlayingRef.current;
+            
+            // 3-second window
+            secretClickTimerRef.current = setTimeout(() => {
+                const finalCount = secretClicksRef.current;
+                const wasPlaying = wasPlayingAtStartRef.current;
+                
+                // Reset
+                secretClicksRef.current = 0;
+                secretClickTimerRef.current = null;
+
+                // JUDGEMENT TIME (3s after first click)
+                if (finalCount >= 5) {
+                    // 5+ Clicks: SECRET
+                    if (playSpecialTrack) playSpecialTrack('source/EX.wav');
+                    if (goToPage) goToPage(0);
+                } else if (finalCount === 2) {
+                    // 2 Clicks (Double Click)
+                    // If we were NOT playing at start, trigger Play now (Delayed Start)
+                    if (!wasPlaying) {
+                        if (togglePageAudio) togglePageAudio();
+                    }
+                    // If we WERE playing at start, Immediate Pause handled by onDoubleClick already took care of it.
+                }
+            }, 3000);
+        }
+    };
+
 
     const handleTouchDoubleTap = (e, callback) => {
          const currentTime = new Date().getTime();
@@ -514,9 +557,35 @@ const BEANetHighlights = ({ isActive, goToPage, togglePageAudio }) => {
                 {cards.map((card, index) => (
                     <div 
                         key={card.id}
-                        onClick={() => goToPage && targetPages[card.id] !== undefined && goToPage(targetPages[card.id])}
-                        onDoubleClick={() => card.id === 'brand' && togglePageAudio && togglePageAudio()}
-                        onTouchEnd={(e) => card.id === 'brand' && handleTouchDoubleTap(e, togglePageAudio)}
+                        onClick={() => {
+                            if (card.id === 'brand') {
+                                handleSecretClick();
+                            } else {
+                                goToPage && targetPages[card.id] !== undefined && goToPage(targetPages[card.id]);
+                            }
+                        }}
+                        onDoubleClick={() => {
+                            // Immediate Pause Rule: If playing, pause immediately.
+                            // If not playing, do nothing (wait for deferred logic)
+                            if (card.id === 'brand' && isPlayingRef.current && togglePageAudio) {
+                                togglePageAudio();
+                            }
+                        }}
+                        onTouchEnd={(e) => {
+                            if (card.id === 'brand') {
+                                e.preventDefault(); // Stop click emulation loop to prevent double counting if mixed
+                                handleSecretClick(); // Count the tap (deferred start or secret)
+                                
+                                // Immediate Pause Logic for Touch (if playing)
+                                const currentTime = new Date().getTime();
+                                const tapLength = currentTime - lastTapRef.current;
+                                lastTapRef.current = currentTime;
+                                
+                                if (isPlayingRef.current && tapLength < 300 && tapLength > 0) {
+                                    if (togglePageAudio) togglePageAudio();
+                                }
+                            }
+                        }}
                         className={`
                             ${card.col} ${card.row} relative group
                             rounded-[1.5rem] backdrop-blur border border-white/10 

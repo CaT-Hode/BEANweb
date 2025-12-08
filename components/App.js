@@ -252,7 +252,7 @@ const App = () => {
     // audioRef and transitionTimeoutRef are now managed in useAudioController hook
     
     // Use the custom hook for audio management
-    const { isPlaying, togglePageAudio } = useAudioController(curr);
+    const { isPlaying, togglePageAudio, playSpecialTrack } = useAudioController(curr);
     
     // Double tap detection for touch devices
     const lastTapRef = React.useRef(0);
@@ -382,7 +382,7 @@ const App = () => {
                             >
                                 <div className={`w-full flex-1 relative flex flex-col rounded-2xl`}>
                                     <div className="relative w-full flex-1 flex flex-col"> {/* Removed overflow-hidden to allow expansion */}
-                                        {Visual && <Visual isActive={!anim} goToPage={go} togglePageAudio={togglePageAudio} />}
+                                        {Visual && <Visual isActive={!anim} goToPage={go} togglePageAudio={togglePageAudio} playSpecialTrack={playSpecialTrack} isPlaying={isPlaying} />}
                                     </div>
                                 </div>
 
