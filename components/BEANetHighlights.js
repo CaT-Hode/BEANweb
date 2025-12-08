@@ -1,13 +1,5 @@
 
-const HLatex = ({ children, displayMode = false }) => {
-    const [html, setHtml] = React.useState(children);
-    React.useEffect(() => {
-        if (window.katex) {
-            setHtml(window.katex.renderToString(children, { throwOnError: false, displayMode }));
-        }
-    }, [children, displayMode]);
-    return <span dangerouslySetInnerHTML={{ __html: html }} />;
-};
+
 
 const BEANetHighlights = ({ isActive, goToPage, togglePageAudio }) => {
     const [mounted, setMounted] = React.useState(false);
