@@ -354,6 +354,128 @@ const App = () => {
     const [isLandscape, setIsLandscape] = React.useState(true);
     const [navHover, setNavHover] = React.useState(null);
     const navRef = React.useRef(null);
+    const audioRef = React.useRef(null);
+    const transitionTimeoutRef = React.useRef(null);
+    const [isPlaying, setIsPlaying] = React.useState(false);
+
+    // Audio Helpers
+    const fadeAudioOut = (audio, duration = 1000) => {
+        if (!audio) return;
+        const steps = 20;
+        const interval = duration / steps;
+        const volStep = audio.volume / steps;
+        
+        const timer = setInterval(() => {
+            if (audio.volume > volStep) {
+                audio.volume -= volStep;
+            } else {
+                audio.volume = 0;
+                audio.pause();
+                clearInterval(timer);
+            }
+        }, interval);
+    };
+
+    const fadeAudioIn = (audio, duration = 1000) => {
+        if (!audio) return;
+        audio.volume = 0;
+        audio.play().catch(e => console.error("Audio play failed:", e));
+        
+        const steps = 20;
+        const interval = duration / steps;
+        const volStep = 1 / steps;
+        
+        const timer = setInterval(() => {
+            if (audio.volume < 1 - volStep) {
+                audio.volume += volStep;
+            } else {
+                audio.volume = 1;
+                clearInterval(timer);
+            }
+        }, interval);
+    };
+
+    // Audio Playback Handler
+    const togglePageAudio = () => {
+        if (isPlaying) {
+            // Pause
+            setIsPlaying(false);
+            // Cancel any pending transition to new track
+            if (transitionTimeoutRef.current) {
+                clearTimeout(transitionTimeoutRef.current);
+            }
+            if (audioRef.current) {
+                // Quick fade out for pause
+                fadeAudioOut(audioRef.current, 300);
+            }
+        } else {
+            // Play
+            setIsPlaying(true);
+            
+            // Check if we can resume current track
+            if (audioRef.current && audioRef.current.dataset.pageIndex == curr) {
+                // Determine if we need to fade in (if it was faded out)
+                if (audioRef.current.paused || audioRef.current.volume < 1) {
+                   fadeAudioIn(audioRef.current, 500);
+                } else {
+                   audioRef.current.play().catch(e => console.error(e));
+                }
+            } else {
+                // New track needed
+                if (audioRef.current) {
+                    fadeAudioOut(audioRef.current, 500);
+                }
+                const trackNum = String(curr + 1).padStart(2, '0');
+                const audioPath = `source/${trackNum}.wav`;
+                const audio = new Audio(audioPath);
+                audio.dataset.pageIndex = curr;
+                audio.onended = () => setIsPlaying(false);
+                
+                audioRef.current = audio;
+                fadeAudioIn(audio, 1000);
+            }
+        }
+    };
+
+    // Auto-switch audio on page change with Sequential Crossfade (1s Out -> 1s In)
+    React.useEffect(() => {
+        // Clear any pending start
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+        }
+
+        if (isPlaying) {
+            // 1. Fade out old immediately
+            if (audioRef.current) {
+                fadeAudioOut(audioRef.current, 1000);
+            }
+            
+            // 2. Wait 1s before starting new
+            transitionTimeoutRef.current = setTimeout(() => {
+                const trackNum = String(curr + 1).padStart(2, '0');
+                const audioPath = `source/${trackNum}.wav`;
+                const audio = new Audio(audioPath);
+                audio.dataset.pageIndex = curr;
+                audio.onended = () => setIsPlaying(false);
+                
+                audioRef.current = audio;
+                fadeAudioIn(audio, 1000);
+            }, 1000);
+            
+        } else {
+            // If silent, ensure everything is clean.
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        }
+        
+        return () => {
+             if (transitionTimeoutRef.current) {
+                clearTimeout(transitionTimeoutRef.current);
+            }
+        };
+    }, [curr]); // Trigger on page change
 
     React.useEffect(() => {
         // Determine if we are in landscape mode based on aspect ratio > 1
@@ -404,7 +526,7 @@ const App = () => {
 
                     {/* Header */}
                     <div className={`flex z-20 shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'} ${isHighlights && isLandscape ? '!h-0 !p-0 !opacity-0 -translate-y-full overflow-hidden' : 'translate-y-0 opacity-100'}`}>
-                        <div className="text-3xl magnetic-target cursor-pointer apple-text-gradient" onClick={() => go(0)}>BEANet</div>
+                        <div className="text-3xl magnetic-target cursor-pointer apple-text-gradient" onDoubleClick={togglePageAudio}>BEANet</div>
                         <div
                             className={`flex items-center justify-center transition-all duration-300 magnetic-target ${isLandscape ? 'mr-4' : 'w-full px-4'}`}
                             data-magnetic-strength="0.1"
