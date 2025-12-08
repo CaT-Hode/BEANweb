@@ -303,8 +303,8 @@ const StrategyDistillation = ({ isActive }) => {
     const lossX = width * 0.85;
 
     const dataY = height * 0.5;
-    const teacherY = height * 0.25;
-    const studentY = height * 0.75;
+    const teacherY = height * 0.30;
+    const studentY = height * 0.65;
     const lossY = height * 0.5;
 
     const nodeW = 160; 
