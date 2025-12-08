@@ -308,7 +308,7 @@ const App = () => {
 
     return (
         <>
-            <MagneticOrb />
+            <MagneticOrb isPlaying={isPlaying} />
             <NeuralBackground />
             <div style={containerStyle}>
                 <div className={`w-full relative select-none text-[#e0e0e0] font-['Inter'] transition-all duration-500 ${isLandscape ? 'min-h-full flex flex-col' : 'min-h-full flex flex-col'}`}>

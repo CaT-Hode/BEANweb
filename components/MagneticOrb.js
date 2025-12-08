@@ -1,7 +1,10 @@
 
 
-const MagneticOrb = () => {
+const MagneticOrb = ({ isPlaying }) => {
     const orbRef = React.useRef(null);
+    const isPlayingRef = React.useRef(isPlaying);
+    React.useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
     const pos = React.useRef({ x: 0, y: 0 });
     const mouse = React.useRef({ x: 0, y: 0 });
     const currentAngle = React.useRef(0); // Store current angle for smoothing
@@ -9,6 +12,7 @@ const MagneticOrb = () => {
     const currentDeformAngle = React.useRef(0); // Store current deformation angle
     const currentHighlightAngle = React.useRef(0); // Separate smoothed angle for highlight
     const currentScale = React.useRef({ x: 1, y: 1 }); // Store current scale for smooth active deformation
+    const colorIntensity = React.useRef(0); // Track color transition intensity (0=White, 1=Siri Color)
     
     // Blob Animation State (JS-based for perfect smoothness)
     const blobPoints = React.useRef([50, 50, 50, 50, 50, 50, 50, 50]); // TL, TR, BR, BL (X then Y)
@@ -224,6 +228,31 @@ const MagneticOrb = () => {
                 const specular = orb ? orb.querySelector('.liquid-glass-orb-specular') : null;
                 const filterLayer = orb ? orb.querySelector('.liquid-glass-orb-filter') : null;
 
+                // --- SIRI COLOR EQUATION WITH SMOOTH TRANSITION ---
+                const time = Date.now() * 0.002;
+                
+                // Smoothly interpolate intensity
+                const targetIntensity = isPlayingRef.current ? 1 : 0;
+                colorIntensity.current += (targetIntensity - colorIntensity.current) * 0.05;
+                const intensity = colorIntensity.current;
+
+                // Skip expensive color calcs if fully white (intensity near 0) and not needing update
+                // But we need to update at least until it settles back to 0
+                
+                const baseHue = 245 + Math.sin(time) * 75; // 170 to 320
+                const secHue = 245 + Math.sin(time + Math.PI) * 75;
+
+                // Helper to mix colors: Start with White, blend to Siri Color based on 'intensity'
+                // For white: hsla(0, 0%, 100%, alpha)
+                // For color: hsla(hue, 85%, 65%, alpha)
+                const getMixedColor = (hue, sat, light, alpha) => {
+                     // Interpolate Saturation: 0 -> sat
+                     const s = sat * intensity;
+                     // Interpolate Lightness: 100 -> light (e.g. 65)
+                     const l = 100 - (100 - light) * intensity;
+                     return `hsla(${hue}, ${s}%, ${l}%, ${alpha})`;
+                };
+                
                 if (orb) {
                     if (isActive) {
                         // Active State Specifics
@@ -245,11 +274,28 @@ const MagneticOrb = () => {
                             const hx = Math.cos(rotAngle + Math.PI * 0.75) * offset;
                             const hy = Math.sin(rotAngle + Math.PI * 0.75) * offset;
 
-                            orb.style.boxShadow = `0 0 25px rgba(255, 255, 255, 0.6)`;
+                            // Active Glow
+                            orb.style.boxShadow = `0 0 25px ${getMixedColor(baseHue, 90, 60, 0.6)}`;
                             specular.style.transform = 'none';
+                            // Active Highlights - Dual tone
+                            const col1 = getMixedColor(baseHue, 85, 65, 1.0);
+                            
+                            // Secondary color: White shadow when 0, Color when 1
+                            // White shadow: rgba(0,0,0,0.4) is actually logic for shadow...
+                            // Let's interpolate between black/shadow color and Siri secondary color
+                            // Start: rgba(0,0,0,0.4) -> End: hsla(secHue, 85, 65, 0.8)
+                            // We can just use getMixedColor logic but careful with base opacity
+                            // Simpler: Just fade in the secondary color over a base shadow
+                            const secColor = `hsla(${secHue}, 85%, 65%, 0.8)`;
+                            const shadowBase = `rgba(0,0,0,0.4)`;
+                            
+                            // We construct the shadow string manually to blend
+                            // Actually, just using opacity mix is fine for visual
+                            const col2 = intensity > 0.1 ? `hsla(${secHue}, 85%, 65%, ${0.4 + 0.4 * intensity})` : shadowBase;
+
                             specular.style.boxShadow = `
-                                inset ${hx}px ${hy}px 15px rgba(255, 255, 255, 1.0),
-                                inset ${-hx}px ${-hy}px 15px rgba(0, 0, 0, 0.4)
+                                inset ${hx}px ${hy}px 15px ${col1},
+                                inset ${-hx}px ${-hy}px 15px ${col2}
                             `;
                         }
                     } else {
@@ -259,10 +305,22 @@ const MagneticOrb = () => {
                         const hx = Math.cos(rotAngle + Math.PI * 0.75) * offset;
                         const hy = Math.sin(rotAngle + Math.PI * 0.75) * offset;
 
+                        // Inactive Highlights - Enhanced Intensity logic
+                        // Increase base saturation/visibility when intensity is high
+                        const mainHighlight = getMixedColor(baseHue, 90, 65, 0.9);
+                        const glowHighlight = getMixedColor(baseHue, 100, 60, 0.3 * intensity); // Fade glow in from 0
+                        
+                        // Secondary highlight: 
+                        // Start: rgba(0,0,0,0.2)
+                        // End: hsla(secHue, 85, 65, 0.6) (Stronger than before)
+                        const secHighlight = intensity > 0.05 
+                             ? `hsla(${secHue}, 90%, 65%, ${0.2 + 0.4 * intensity})` 
+                             : `rgba(0, 0, 0, 0.2)`;
+
                         orb.style.boxShadow = `
-                            inset ${hx}px ${hy}px 4px rgba(255, 255, 255, 0.9),
-                            inset ${-hx}px ${-hy}px 4px rgba(0, 0, 0, 0.2),
-                            0 0 10px rgba(255, 255, 255, 0.3)
+                            inset ${hx}px ${hy}px 4px ${mainHighlight},
+                            inset ${-hx}px ${-hy}px 4px ${secHighlight},
+                            0 0 ${10 + 10 * intensity}px ${glowHighlight}
                         `;
 
                         if (specular) {

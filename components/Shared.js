@@ -102,18 +102,29 @@ const useAudioController = (curr) => {
     const [isPlaying, setIsPlaying] = React.useState(false);
 
     // Audio Helpers
+    // Audio Helpers
     const fadeAudioOut = (audio, duration = 1000) => {
         if (!audio) return;
         const steps = 20;
         const interval = duration / steps;
-        const volStep = audio.volume / steps;
+        // On iOS, volume property might be read-only or not affect playback, 
+        // so we track logical volume locally to ensure the loop finishes and pauses.
+        let localVol = audio.volume; 
+        const volStep = localVol / steps;
+        let currentStep = 0;
         
         const timer = setInterval(() => {
-            if (audio.volume > volStep) {
-                audio.volume -= volStep;
-            } else {
-                audio.volume = 0;
+            currentStep++;
+            localVol -= volStep;
+            
+            // Attempt to set volume (works on desktop/Android)
+            if (localVol >= 0) {
+                 try { audio.volume = localVol; } catch(e) {}
+            }
+
+            if (currentStep >= steps) {
                 audio.pause();
+                try { audio.volume = 0; } catch(e) {} // Ensure 0 if possible
                 clearInterval(timer);
             }
         }, interval);
@@ -121,20 +132,28 @@ const useAudioController = (curr) => {
 
     const fadeAudioIn = (audio, duration = 1000) => {
         if (!audio) return;
-        audio.volume = 0;
+        try { audio.volume = 0; } catch(e) {}
         audio.play().catch(e => console.error("Audio play failed:", e));
         
         const steps = 20;
         const interval = duration / steps;
-        const volStep = 1 / steps;
+        const targetVol = 1;
+        const volStep = targetVol / steps;
+        let localVol = 0;
+        let currentStep = 0;
         
         const timer = setInterval(() => {
-            if (audio.volume < 1 - volStep) {
-                audio.volume += volStep;
-            } else {
-                audio.volume = 1;
-                clearInterval(timer);
-            }
+           currentStep++;
+           localVol += volStep;
+           
+           if (localVol <= 1) {
+               try { audio.volume = localVol; } catch(e) {}
+           }
+           
+           if (currentStep >= steps) {
+               try { audio.volume = 1; } catch(e) {}
+               clearInterval(timer);
+           }
         }, interval);
     };
 
