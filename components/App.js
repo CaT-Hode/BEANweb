@@ -404,7 +404,7 @@ const App = () => {
 
                     {/* Header */}
                     <div className={`flex z-20 shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isLandscape ? 'justify-between items-center px-8 py-2 h-12' : 'flex-col items-center justify-center pt-6 pb-2 gap-4'} ${isHighlights && isLandscape ? '!h-0 !p-0 !opacity-0 -translate-y-full overflow-hidden' : 'translate-y-0 opacity-100'}`}>
-                        <div className="font-black tracking-widest text-sky-500 text-3xl magnetic-target cursor-pointer" onClick={() => go(0)}>BEANet</div>
+                        <div className="text-3xl magnetic-target cursor-pointer apple-text-gradient" onClick={() => go(0)}>BEANet</div>
                         <div
                             className={`flex items-center justify-center transition-all duration-300 magnetic-target ${isLandscape ? 'mr-4' : 'w-full px-4'}`}
                             data-magnetic-strength="0.1"

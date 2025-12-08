@@ -455,4 +455,44 @@ input[type="range"]::-webkit-slider-runnable-track {
     box-shadow: none; 
 }
 
+/* --- Apple-Style Premium Text Gradient --- */
+@keyframes gradient-rhythm {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.apple-text-gradient {
+  /* Apple Event Style: SF Pro Display or Inter, tightly tracked */
+  font-family: "SF Pro Display", "SF Pro", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Premium Event Typography: Heavy, Tight, Clean */
+  font-weight: 800; 
+  letter-spacing: -0.03em; /* Very tight spacing characteristic of Apple headers */
+  
+  /* Apple-style "Intelligence" Gradient (Blue -> Purple -> Pinkish -> Back) */
+  background: linear-gradient(
+    110deg,             
+    #38bdf8 0%,         /* Sky 400 */
+    #818cf8 25%,        /* Indigo 400 */
+    #c084fc 50%,        /* Purple 400 */
+    #e879f9 75%,        /* Fuchsia 400 */
+    #38bdf8 100%        /* Loop back */
+  );
+  
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  
+  /* Smoother rhythm */
+  animation: gradient-rhythm 8s linear infinite;
+  
+  /* Subtle glow for depth */
+  filter: drop-shadow(0 2px 15px rgba(139, 92, 246, 0.4));
+  
+  /* Ensure it sits nicely */
+  display: inline-block;
+}
+
 
