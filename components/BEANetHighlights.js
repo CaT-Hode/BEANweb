@@ -7,6 +7,17 @@ const BEANetHighlights = ({ isActive, goToPage, togglePageAudio }) => {
     const [gridStyle, setGridStyle] = React.useState({});
     const cardsContainerRef = React.useRef(null);
     const animationFrameRef = React.useRef(null);
+    const lastTapRef = React.useRef(0);
+
+    const handleTouchDoubleTap = (e, callback) => {
+         const currentTime = new Date().getTime();
+         const tapLength = currentTime - lastTapRef.current;
+         if (tapLength < 300 && tapLength > 0) {
+             callback && callback();
+             e.preventDefault();
+         }
+         lastTapRef.current = currentTime;
+    };
 
     React.useEffect(() => {
         const updateLayout = () => {
@@ -505,6 +516,7 @@ const BEANetHighlights = ({ isActive, goToPage, togglePageAudio }) => {
                         key={card.id}
                         onClick={() => goToPage && targetPages[card.id] !== undefined && goToPage(targetPages[card.id])}
                         onDoubleClick={() => card.id === 'brand' && togglePageAudio && togglePageAudio()}
+                        onTouchEnd={(e) => card.id === 'brand' && handleTouchDoubleTap(e, togglePageAudio)}
                         className={`
                             ${card.col} ${card.row} relative group
                             rounded-[1.5rem] backdrop-blur border border-white/10 
