@@ -182,13 +182,13 @@ const NeuralBackground = () => {
                 let dxMouse = mouse.x - this.x;
                 let dyMouse = mouse.y - this.y;
                 let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-                const repulsionDist = 150; // Reduced interaction radius
+                const repulsionDist = 250; // Increased interaction radius for better feedback
 
                 if (distMouse < repulsionDist) {
                     const force = (repulsionDist - distMouse) / repulsionDist;
-                    // Reduced repulsion strength
-                    this.vx -= (dxMouse / distMouse) * force * 0.2;
-                    this.vy -= (dyMouse / distMouse) * force * 0.2;
+                    // Strengthened repulsion effect
+                    this.vx -= (dxMouse / distMouse) * force * 0.6;
+                    this.vy -= (dyMouse / distMouse) * force * 0.6;
                 }
 
                 // 4. Attraction to UI Elements
@@ -258,8 +258,8 @@ const NeuralBackground = () => {
                 blobs.push(new Blob());
             }
 
-            // Increased Dust Particles Count
-            const dustCount = Math.floor((width * height) / 6000); // Increased density
+            // Adjusted Dust Particles Count (Reduced number)
+            const dustCount = Math.floor((width * height) / 9000);
             for (let i = 0; i < dustCount; i++) {
                 dustParticles.push(new Dust());
             }
